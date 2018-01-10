@@ -1,0 +1,50 @@
+Multiline Comment - /******************************
+ * Authors
+ * Manoj Kumar 15CO128
+ * Hrishikesh Hiraskar 15CO121
+ ******************************/
+
+
+Error : Illegal header
+
+Datatype - int 
+Keyword - main
+Parentheses - (
+Parentheses - )
+Parentheses - {
+
+Keyword - double
+
+Error : Illegal token 1a
+
+Identifier - a 
+Delimiter - ;
+Single line Comment - // invalid Identifier
+
+Identifier - a
+Operator - = 
+Error : Illegal token 1e*3
+
+Delimiter - ;
+Single line Comment - //illegal floating constant
+
+Identifier - a
+Operator - = 
+Error : Illegal token 1.0.01
+
+Delimiter - ;
+Single line Comment - //illegal floating constant
+
+Error : Illegal escape sequence
+Delimiter - ;
+Single line Comment - //illegal escape sequences
+
+Keyword - return 
+Integer Constant - 0
+Delimeter - ;
+Parentheses - }
+
+
+
+
+
