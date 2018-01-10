@@ -11,7 +11,8 @@ Keyword - main
 Parentheses - (
 Parentheses - )
 Parentheses - {
-function_call - printf("Test case for scanning\n");
+function_call - printf("Test case for scanning\n")
+Delimeter - ;
     
 Single line Comment - // Line to validate the tokenization of single line comments
     
@@ -23,14 +24,17 @@ Single line Comment - // Identifiers
 Datatype - double 
 Identifier - aBA
 Operator - = 
-Double constant - 1e5;
+Double constant - 1e5
+Delimeter - ;
 Datatype - char 
 Identifier - _12
 Operator - =
-Character constant - 'x';
+Character constant - 'x'
+Delimeter - ;
 Identifier - A_1
 Operator - = 
-Double constant - 12.0;
+Double constant - 12.0
+Delimeter - ;
 
 
 Single line comment - // Array
@@ -38,36 +42,44 @@ Datatype - int
 Identifier - arr
 Array definition - [5] 
 Operator - = 
-Array - {1, 2, 3, 4, 5};
+Array - {1, 2, 3, 4, 5}
+Delimeter - ;
 
 Single line comment - // Operators Tests
 Datatype - int 
 Identifier - a 
 Operator - = 
-Integer Constant - 2;
+Integer Constant - 2
+Delimeter - ;
 Datatype - int 
 Identifier - b 
 Operator - = 
-Integer Constant - 1;
+Integer Constant - 1
+Delimeter - ;
 Datatype - int
 Identifier - c
 Operator - = 
-Expression - a + b;
+Expression - a + b
+Delimeter - ;
 Identifier - c 
 Operator = 
-Expression - a % b;
+Expression - a % b
+Delimeter - ;
 Identifier - c 
 Operator - = 
 Identifier - a
-Operator - ++;
+Operator - ++
+Delimeter - ;
 
 Datatype - int
 Identifier - flag 
 Operator - = 
-Integer Constant - 1;
+Integer Constant - 1
+Delimeter - ;
 Single line comment - // If condition
 If Condition - if (flag == 1)
-		printf("Hello World!\n");
+		printf("Hello World!\n")
+Delimeter - ;
     
 Single line comment - // If else condition
 If else condition - if (flag == 1)
@@ -87,7 +99,8 @@ Single line comment - // For loop
 For Loop - for (int i = 0; i < 5; i++) {
 		printf("*");
 	}
-Function Call - printf("\n");
+Function Call - printf("\n")
+Delimeter - ;
 
 Single line comment - // Nested For loop
 For loop - for (int i = 5; i >= 0; i--) {
@@ -106,7 +119,8 @@ While loop - while (i >= 0) {
         printf("*");
         i--;
     }
-Function Call - printf("\n");
+Function Call - printf("\n")
+Delimeter - ;
 
 Single line comment - // Nested while loop
 Identifier - i 
@@ -123,5 +137,6 @@ While loop - while (i >= 0) {
 	}
 
 Keyword - return 
-Integer Constant - 0;
+Integer Constant - 0
+Delimeter - ;
 Parentheses - }
