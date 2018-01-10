@@ -1,0 +1,121 @@
+Multiline Comment - /******************************
+ * Authors
+ * Manoj Kumar 15CO128
+ * Hrishikesh Hiraskar 15CO121
+ ******************************/
+ 
+header - #include<stdio.h>
+
+Datatype - int 
+Keyword - main
+Parentheses - (
+Parentheses - )
+Parentheses - {
+function_call - printf("Test case for scanning\n");
+    
+Single line Comment - // Line to validate the tokenization of single line comments
+    
+Multiline Comment - /* This comment tests 
+     * multi line comments
+     */
+
+Single line Comment - // Identifiers
+Datatype - double 
+Identifier - aBA
+Operator - = 
+Double constant - 1e5;
+Datatype - char 
+Identifier - _12
+Operator - =
+Character constant - 'x';
+Identifier - A_1
+Operator - = 
+Double constant - 12.0;
+
+
+Single line comment - // Array
+Datatype - int 
+Identifier - arr
+Array definition - [5] 
+Operator - = 
+Array - {1, 2, 3, 4, 5};
+
+Single line comment - // Operators Tests
+Datatype - int 
+Identifier - a 
+Operator - = 
+Integer Constant - 2;
+Datatype - int 
+Identifier - b 
+Operator - = 
+Integer Constant - 1;
+Datatype - int
+Identifier - c
+Operator - = 
+Expression - a + b;
+Identifier - c 
+Operator = 
+Expression - a % b;
+Identifier - c 
+Operator - = 
+Identifier - a
+Operator - ++;
+
+Datatype - int
+Identifier - flag 
+Operator - = 
+Integer Constant - 1;
+Single line comment - // If condition
+If Condition - if (flag == 1)
+		printf("Hello World!\n");
+    
+    // If else condition
+	if (flag == 1)
+		printf("Hello World!\n");
+	else 
+		printf("Bye World!\n");
+
+    // Else if ladder
+	if (flag == 1)
+		printf("Hello World!\n");
+	else if (flag == 0)
+		printf("Hi World!\n");
+	else 
+		printf("Bye World!\n");
+
+    // For loop
+    for (int i = 0; i < 5; i++) {
+		printf("*");
+	}
+	printf("\n");
+
+    // Nested For loop
+	for (int i = 5; i >= 0; i--) {
+		for (int j = 0; j < i; j++) {
+			printf("*");
+		}
+		printf("\n");
+	}
+
+    // While loop
+    int i = 5;
+    while (i >= 0) {
+        printf("*");
+        i--;
+    }
+    printf("\n");
+
+    // Nested while loop
+    i = 5;
+    while (i >= 0) {
+		int j = i;
+		while (j >= 0) {
+			printf("*");
+			j--;
+		}
+		printf("\n");
+		i--;
+	}
+
+	return 0;
+}
