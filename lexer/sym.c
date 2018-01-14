@@ -1,5 +1,3 @@
-%{
-
 #include <stdio.h>
 
 #include <string.h>
@@ -124,77 +122,15 @@ int stopCurrentBlock (struct SymbolTable* symbolTable) {
     return 1;
 }
 
-struct SymbolTable* symbolTable = initSymbolTable(0);
-
-%}
-blank_char			[ \t\n]
-letter 				[a-z|A-Z]
-digit 				[0-9]
-delimeter			;
-space 				[ ]
-
-header 				#include(\<{letter}+\.h\>)|#include\"{letter}+(\.)?{letter}*\"
-
-identifier 			({letter}|_)({letter}|{digit}|_)*
-data_type 			(void)|(int)|(char)|(float)|(double)|(struct({space}{identifier}))|(union({space}{identifier}))
-
-parameter_list 		({identifier},)*({identifier})
-function_call 		{identifier}\({parameter_list}\)|{identifier}\(\)
-
-integer 			({digit})*
-unsigned_integer	{integer}
-signed_integer		(\+|\-)?{integer}
-positive_integer	(\+)?{integer}
-
-double				{integer}\.{integer}
-unsigned_double		{double}
-signed_double		(\+|\-)?{double}
-
-array_definition	{data_type}{space}{identifier}\[{positive_integer}\]
-
-assignment_operator	=
-operator			(\+|\-|\*|\/|\+\+|\-\-|\%)
-relational_operator	(\<|\<=|\>|\>=|==|!=)
-logical_operator 	(&&|\|\||!)
-bitwise_operator	(&|\||\^|~|\<\<|\>\>)
-
-single_comment		\/\/.*
-multi_comment		\/\*(.|\n)+\*\/
-
-%%
-{blank_char} 		;
-
-{header} 			printf("header : %s\n", yytext);
-
-{data_type}			printf("data_type : %s\n", yytext);
-{identifier}		printf("identifier : %s\n", yytext);
-
-{parameter_list}	printf("parameter_list : %s\n", yytext);
-{function_call}		printf("function_call : %s\n", yytext);
-
-{unsigned_integer}	printf("unsigned_integer : %s\n", yytext);
-{signed_integer}	printf("signed_integer : %s\n", yytext);
-
-{array_definition}	printf("array_definition : %s\n", yytext);
-
-{single_comment}	printf("single_comment : %s\n", yytext);
-{multi_comment}		printf("multi_comment : %s\n", yytext);
-
-{assignment_operator} printf("assignment_operator : %s\n", yytext);
-{operator}			printf("operator : %s\n", yytext);
-{relational_operator} printf("relational_operator : %s\n", yytext);
-{logical_operator}	printf("logical_operator : %s\n", yytext);
-{bitwise_operator}	printf("bitwise_operator : %s\n", yytext);
-
-{delimeter}			printf("delimeter : %s\n", yytext);
-%%
-
-int main () {
-	yyin = fopen("test.c", "r");
-	yylex();
-	fclose(yyin);
-}
-
-int yywrap () {
-	return 1;
+int main(void)
+{
+    struct SymbolTable *symbolTable = initSymbolTable(0);
+    addSymbol(symbolTable, "int", "a");
+    addSymbol(symbolTable, "int", "b");
+        startNewBlock(symbolTable);
+        addSymbol(symbolTable, "int", "c");
+        stopCurrentBlock(symbolTable);
+    addSymbol(symbolTable, "int", "d");    
+    printSymbols(symbolTable);
+    printf("%d\n", hasSymbol(symbolTable, "int", "ab"));
 }
