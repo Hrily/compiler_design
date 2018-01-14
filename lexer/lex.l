@@ -169,11 +169,9 @@ if_construct        if({space}*)?\((.)+\)
 else                else
 
 
-f_braces            [\{|\}]
-
 %%
 {blank_char} 		;
-{f_braces}          ;
+
 
 {header} 			printf("header : %s\n", yytext);
 
