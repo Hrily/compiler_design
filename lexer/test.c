@@ -56,3 +56,28 @@ c = a & b;
 c = a | b;
 c = a ^ b;
 c = ~b;
+
+
+if(akdf)
+
+if(kdfkd)
+{
+
+}
+else
+{
+
+}
+
+if(dkfdj)
+{
+
+}
+else if(dkfjdf)
+{
+
+}
+else
+{
+        
+}

@@ -124,14 +124,14 @@ int stopCurrentBlock (struct SymbolTable* symbolTable) {
     return 1;
 }
 
-struct SymbolTable* symbolTable = initSymbolTable(0);
+
 
 %}
 blank_char			[ \t\n]
 letter 				[a-z|A-Z]
 digit 				[0-9]
 delimeter			;
-space 				[ ]
+space 				[ \t]
 
 header 				#include(\<{letter}+\.h\>)|#include\"{letter}+(\.)?{letter}*\"
 
@@ -161,12 +161,22 @@ bitwise_operator	(&|\||\^|~|\<\<|\>\>)
 single_comment		\/\/.*
 multi_comment		\/\*(.|\n)+\*\/
 
+if_construct        if({space}*)?\((.)+\)
+else                else
+
+
+f_braces            [\{|\}]
+
 %%
 {blank_char} 		;
+{f_braces}          ;
 
 {header} 			printf("header : %s\n", yytext);
 
 {data_type}			printf("data_type : %s\n", yytext);
+
+{if_construct}      printf("if_construct : %s\n", yytext);
+{else}           printf("else_construct : %s\n", yytext);
 {identifier}		printf("identifier : %s\n", yytext);
 
 {parameter_list}	printf("parameter_list : %s\n", yytext);
@@ -187,6 +197,7 @@ multi_comment		\/\*(.|\n)+\*\/
 {bitwise_operator}	printf("bitwise_operator : %s\n", yytext);
 
 {delimeter}			printf("delimeter : %s\n", yytext);
+
 %%
 
 int main () {
