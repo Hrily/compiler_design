@@ -81,3 +81,10 @@ else
 {
         
 }
+int e, f[3];
+{
+    int g, e,
+        t;
+}
+int d;
+d = 0;
