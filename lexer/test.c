@@ -56,3 +56,11 @@ c = a & b;
 c = a | b;
 c = a ^ b;
 c = ~b;
+
+int e, f[3];
+{
+    int g, e,
+        t;
+}
+int d;
+d = 0;
