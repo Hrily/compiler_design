@@ -139,22 +139,27 @@ comma				,
 start_block			\{
 end_block			\}
 
+keyword				auto|double|int|struct|break|else|long|switch|case|enum|register|typedef|char|extern|return|union|const|float|short|unsigned|continue|for|signed|void|default|goto|sizeof|volatile|do|if|static|while
+
 header 				#include(\<{letter}+\.h\>)|#include\"{letter}+(\.)?{letter}*\"
 
 identifier 			({letter}|_)({letter}|{digit}|_)*(\[{positive_integer}\])?
 data_type 			(void)|(int)|(char)|(float)|(double)|(struct({space}{identifier}))|(union({space}{identifier}))
+nonidentifier		[^a-zA-Z_]([^0-9,.; \t\n])+([^, \t\n.;])*
 
 parameter_list 		({identifier},)*({identifier})
-function_call 		{identifier}\({parameter_list}\)|{identifier}\(\)
 
 integer 			({digit})*
 unsigned_integer	{integer}
 signed_integer		(\+|\-)?{integer}
 positive_integer	(\+)?{integer}
 
-double				{integer}\.{integer}
+double				({integer}\.{integer}([eE]{integer})?)|({integer}[eE]{integer})
 unsigned_double		{double}
 signed_double		(\+|\-)?{double}
+nondouble			{digit}+(\.{integer})(\.{integer})+
+
+string_constant		\".*\"
 
 assignment_operator	=
 operator			(\+|\-|\*|\/|\+\+|\-\-|\%)
@@ -189,6 +194,7 @@ else                else
 	addToST = TRUE;
 	printf("data_type : %s\n", yytext);
 };
+{keyword}      		{printf("keyword : %s\n", yytext);}
 {identifier}		{
 	// Remove array braces if needed
 	for (int i=0; i<yyleng; i++) {
@@ -208,10 +214,15 @@ else                else
 };
 
 {parameter_list}	printf("parameter_list : %s\n", yytext);
-{function_call}		printf("function_call : %s\n", yytext);
 
-{unsigned_integer}	printf("unsigned_integer : %s\n", yytext);
+{nondouble}			printf("Illegal double constant : %s\n", yytext);
+{double}			printf("double : %s\n", yytext);
+{signed_double}		printf("signed_double : %s\n", yytext);
+
+{integer}			printf("integer : %s\n", yytext);
 {signed_integer}	printf("signed_integer : %s\n", yytext);
+
+{string_constant}	printf("string_constant : %s\n", yytext);
 
 {single_comment}	printf("single_comment : %s\n", yytext);
 {multi_comment}		printf("multi_comment : %s\n", yytext);
@@ -224,6 +235,10 @@ else                else
 
 {delimeter}			{ if (addToST) addToST = FALSE; }
 {comma}				;
+
+{nonidentifier}		printf("Invalid identifier : %s\n", yytext);
+[^ \t\n]			printf("Invalid character : %s\n", yytext);
+
 %%
 
 int main () {
