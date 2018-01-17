@@ -42,6 +42,7 @@
 
 #define last_element(array) array.data[array.length-1]
 
+
 struct Symbol {
     char* name;
     char* type;
@@ -65,7 +66,7 @@ struct SymbolTable* initSymbolTable (int depth) {
     return symbolTable;
 }
 
-void addSymbol (struct SymbolTable *symbolTable, 
+void addSymbolWithType (struct SymbolTable *symbolTable, 
         char* type, char* name) {
     struct Symbol *symbol = (struct Symbol*)
             malloc(sizeof(struct Symbol));
@@ -73,6 +74,15 @@ void addSymbol (struct SymbolTable *symbolTable,
     strcpy(symbol->name, name);
     symbol->type = (char*) malloc(strlen(type)) + 1;
     strcpy(symbol->type, type);
+    array_push(last_element(symbolTable->stack)->symbols, symbol);
+}
+
+void addSymbol (struct SymbolTable *symbolTable, 
+        char* name) {
+    struct Symbol *symbol = (struct Symbol*)
+            malloc(sizeof(struct Symbol));
+    symbol->name = (char*) malloc(strlen(name)) + 1;
+    strcpy(symbol->name, name);
     array_push(last_element(symbolTable->stack)->symbols, symbol);
 }
 
@@ -109,6 +119,16 @@ int hasSymbol (struct SymbolTable* symbolTable,
     return 0;
 }
 
+struct Symbol* findSymbol (struct SymbolTable* symbolTable, 
+        char* name) {
+    struct SymbolTable* currentST = last_element(symbolTable->stack);
+    for (int i=0; i<currentST->symbols.length; i++) {
+        if (strcmp(currentST->symbols.data[i]->name, name) == 0)
+            return currentST->symbols.data[i];
+    }
+    return NULL;
+}
+
 void startNewBlock (struct SymbolTable* symbolTable) {
     struct SymbolTable *currentST = last_element(symbolTable->stack);
     struct SymbolTable *newST = initSymbolTable(symbolTable->depth + 1);
@@ -125,12 +145,13 @@ int stopCurrentBlock (struct SymbolTable* symbolTable) {
 int main(void)
 {
     struct SymbolTable *symbolTable = initSymbolTable(0);
-    addSymbol(symbolTable, "int", "a");
-    addSymbol(symbolTable, "int", "b");
+    addSymbol(symbolTable, "a");
+    addSymbol(symbolTable, "b");
         startNewBlock(symbolTable);
-        addSymbol(symbolTable, "int", "c");
+        addSymbol(symbolTable, "c");
         stopCurrentBlock(symbolTable);
-    addSymbol(symbolTable, "int", "d");    
+    addSymbol(symbolTable, "d");    
     printSymbols(symbolTable);
-    printf("%d\n", hasSymbol(symbolTable, "int", "ab"));
+    struct Symbol* s = findSymbol(symbolTable, "a");
+    printf("%s\n", s->name);
 }

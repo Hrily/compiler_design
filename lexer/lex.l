@@ -1,13 +1,13 @@
 %{
 
 #include <stdio.h>
+
 #include <string.h>
 #include <stdlib.h>
 
-#define TRUE		1
-#define FALSE		0
-#define typeof 		__typeof__
-#define PUTTAB(n) 	{for(int _i_=0;_i_<n;_i_++) {printf("\t");}}
+#define typeof __typeof__
+
+#define PUTTAB(n) {for(int _i_=0;_i_<n;_i_++) {printf("\t");}}
 
 #define array(type)  \
   struct {           \
@@ -44,6 +44,7 @@
 
 #define last_element(array) array.data[array.length-1]
 
+
 struct Symbol {
     char* name;
     char* type;
@@ -67,7 +68,7 @@ struct SymbolTable* initSymbolTable (int depth) {
     return symbolTable;
 }
 
-void addSymbol (struct SymbolTable *symbolTable, 
+void addSymbolWithType (struct SymbolTable *symbolTable, 
         char* type, char* name) {
     struct Symbol *symbol = (struct Symbol*)
             malloc(sizeof(struct Symbol));
@@ -78,11 +79,20 @@ void addSymbol (struct SymbolTable *symbolTable,
     array_push(last_element(symbolTable->stack)->symbols, symbol);
 }
 
+void addSymbol (struct SymbolTable *symbolTable, 
+        char* name) {
+    struct Symbol *symbol = (struct Symbol*)
+            malloc(sizeof(struct Symbol));
+    symbol->name = (char*) malloc(strlen(name)) + 1;
+    strcpy(symbol->name, name);
+    array_push(last_element(symbolTable->stack)->symbols, symbol);
+}
+
 void printSymbols (struct SymbolTable *symbolTable) {
     // Print current block
     if (symbolTable->symbols.length <= 0) goto print_child;
     PUTTAB(symbolTable->depth);
-    printf("=======START=======\n");
+    printf("=================START=================\n");
     PUTTAB(symbolTable->depth);
     printf(" TYPE\tNAME\n");
     for (int i=0; i<symbolTable->symbols.length; i++) {
@@ -92,7 +102,7 @@ void printSymbols (struct SymbolTable *symbolTable) {
             symbolTable->symbols.data[i]->name);
     }
     PUTTAB(symbolTable->depth);
-    printf("========END========\n");
+    printf("==================END==================\n");
     print_child:
     // Print Children
     for(int i=0; i<symbolTable->children.length; i++) 
@@ -111,6 +121,16 @@ int hasSymbol (struct SymbolTable* symbolTable,
     return 0;
 }
 
+struct Symbol* findSymbol (struct SymbolTable* symbolTable, 
+        char* name) {
+    struct SymbolTable* currentST = last_element(symbolTable->stack);
+    for (int i=0; i<currentST->symbols.length; i++) {
+        if (strcmp(currentST->symbols.data[i]->name, name) == 0)
+            return currentST->symbols.data[i];
+    }
+    return NULL;
+}
+
 void startNewBlock (struct SymbolTable* symbolTable) {
     struct SymbolTable *currentST = last_element(symbolTable->stack);
     struct SymbolTable *newST = initSymbolTable(symbolTable->depth + 1);
@@ -125,8 +145,6 @@ int stopCurrentBlock (struct SymbolTable* symbolTable) {
 }
 
 struct SymbolTable* symbolTable = NULL;
-int addToST = FALSE;
-char* type;
 
 %}
 blank_char			[ \t\n]
@@ -143,9 +161,9 @@ keyword				auto|double|int|struct|break|else|long|switch|case|enum|register|type
 
 header 				#include(\<{letter}+\.h\>)|#include\"{letter}+(\.)?{letter}*\"
 
-identifier 			({letter}|_)({letter}|{digit}|_)*(\[{positive_integer}\])?
+identifier 			({letter}|_)({letter}|{digit}|_)*
 data_type 			(void)|(int)|(char)|(float)|(double)|(struct({space}{identifier}))|(union({space}{identifier}))
-nonidentifier		[^a-zA-Z_]([^0-9,.; \t\n])+([^, \t\n.;])*
+nonidentifier		[^a-zA-Z_,.; \t\n]([^0-9,.; \t\n])+([^, \t\n.;])*
 
 parameter_list 		({identifier},)*({identifier})
 
@@ -187,29 +205,13 @@ else                else
 {start_block}		{startNewBlock (symbolTable);};
 {end_block}			{stopCurrentBlock (symbolTable);};
 
-
-{data_type}			{
-	type = (char*) malloc(yyleng);
-	strcpy(type, yytext);
-	addToST = TRUE;
-	printf("data_type : %s\n", yytext);
-};
+{data_type}    		{printf("data_type : %s\n", yytext);}
 {keyword}      		{printf("keyword : %s\n", yytext);}
 {identifier}		{
-	// Remove array braces if needed
-	for (int i=0; i<yyleng; i++) {
-		if (yytext[i] == '[') {
-			yytext[i] = '\0';
-			break;
-		}
-	}
-	if (addToST) {
-		if (hasSymbol(symbolTable, type, yytext))
-			printf("Redeclaration error for %s\n", yytext);
-		else
-			addSymbol(symbolTable, type, yytext);
-		
-	}
+    if (findSymbol(symbolTable, yytext) != NULL)
+        printf("Redeclaration error for %s\n", yytext);
+    else
+        addSymbol(symbolTable, yytext);
 	printf("identifier : %s\n", yytext);
 };
 
@@ -233,7 +235,7 @@ else                else
 {logical_operator}	printf("logical_operator : %s\n", yytext);
 {bitwise_operator}	printf("bitwise_operator : %s\n", yytext);
 
-{delimeter}			{ if (addToST) addToST = FALSE; }
+{delimeter}			;
 {comma}				;
 
 {nonidentifier}		printf("Invalid identifier : %s\n", yytext);
