@@ -171,7 +171,7 @@ nonidentifier		[^a-zA-Z_,.; \t\n]([^0-9,.; \t\n])+([^, \t\n.;])*
 
 parameter_list 		({identifier},)*({identifier})
 
-integer 			({digit})*
+integer 			({digit})+
 unsigned_integer	{integer}
 signed_integer		(\+|\-)?{integer}
 positive_integer	(\+)?{integer}
@@ -197,6 +197,9 @@ multi_comment		\/\*(.|\n)+\*\/
 if_construct        if({space}*)?\((.)+\)
 else                else
 
+for                 for({space}*)\(.*;.*;.*\)
+
+while               while({space}*)\(\)
 
 %%
 {blank_char} 		;
@@ -206,7 +209,10 @@ else                else
 
 
 {if_construct}      printf("if_construct : %s\n", yytext);
-{else}           printf("else_construct : %s\n", yytext);
+{else}              printf("else_construct : %s\n", yytext);
+
+{for}               printf("for loop : %s\n", yytext);
+{while}             printf("while loop : %s\n", yytext);
 
 {start_block}		;
 {end_block}			;
@@ -240,8 +246,8 @@ else                else
 
 {delimeter}			;
 {comma}				;
+[(){}]|\[|\]        ;
 
-{nonidentifier}		printf("Invalid identifier : %s\n", yytext);
 [^ \t\n]			printf("Invalid character : %s\n", yytext);
 
 %%
