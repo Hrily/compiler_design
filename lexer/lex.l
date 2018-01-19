@@ -45,106 +45,110 @@
 #define last_element(array) array.data[array.length-1]
 
 
-struct Symbol {
+struct Symbol 
+{
     char* name;
     char* type;
 };
 
-struct SymbolTable {
-    int depth;
+struct SymbolTable 
+{
     array(struct Symbol*) symbols;
-    array(struct SymbolTable*) children;
-    array(struct SymbolTable*) stack;
 };
 
-struct SymbolTable* initSymbolTable (int depth) {
+struct SymbolTable* initSymbolTable ()
+{
     struct SymbolTable* symbolTable = (struct SymbolTable*)
             malloc(sizeof(struct SymbolTable));
-    symbolTable->depth = depth;
     symbolTable->symbols = (typeof(symbolTable->symbols)) array_init();
-    symbolTable->children = (typeof(symbolTable->children)) array_init();
-    symbolTable->stack = (typeof(symbolTable->stack)) array_init();
-    array_push(symbolTable->stack, symbolTable);
     return symbolTable;
 }
 
-void addSymbolWithType (struct SymbolTable *symbolTable, 
-        char* type, char* name) {
-    struct Symbol *symbol = (struct Symbol*)
-            malloc(sizeof(struct Symbol));
-    symbol->name = (char*) malloc(strlen(name)) + 1;
-    strcpy(symbol->name, name);
-    symbol->type = (char*) malloc(strlen(type)) + 1;
-    strcpy(symbol->type, type);
-    array_push(last_element(symbolTable->stack)->symbols, symbol);
-}
-
-void addSymbol (struct SymbolTable *symbolTable, 
-        char* name) {
-    struct Symbol *symbol = (struct Symbol*)
-            malloc(sizeof(struct Symbol));
-    symbol->name = (char*) malloc(strlen(name)) + 1;
-    strcpy(symbol->name, name);
-    array_push(last_element(symbolTable->stack)->symbols, symbol);
-}
-
-void printSymbols (struct SymbolTable *symbolTable) {
-    // Print current block
-    if (symbolTable->symbols.length <= 0) goto print_child;
-    PUTTAB(symbolTable->depth);
-    printf("=================START=================\n");
-    PUTTAB(symbolTable->depth);
-    printf(" TYPE\tNAME\n");
+int hasSymbol (struct SymbolTable* symbolTable, char* name)
+{
     for (int i=0; i<symbolTable->symbols.length; i++) {
-        PUTTAB(symbolTable->depth);
-        printf(" %s\t%s\n", 
-            symbolTable->symbols.data[i]->type, 
-            symbolTable->symbols.data[i]->name);
-    }
-    PUTTAB(symbolTable->depth);
-    printf("==================END==================\n");
-    print_child:
-    // Print Children
-    for(int i=0; i<symbolTable->children.length; i++) 
-        printSymbols(symbolTable->children.data[i]);
-
-}
-
-int hasSymbol (struct SymbolTable* symbolTable, 
-        char* type, char* name) {
-    struct SymbolTable* currentST = last_element(symbolTable->stack);
-    for (int i=0; i<currentST->symbols.length; i++) {
-        if (strcmp(currentST->symbols.data[i]->type, type) == 0 &&
-                strcmp(currentST->symbols.data[i]->name, name) == 0)
+        if (strcmp(symbolTable->symbols.data[i]->name, name) == 0)
             return 1;
     }
     return 0;
 }
 
-struct Symbol* findSymbol (struct SymbolTable* symbolTable, 
-        char* name) {
-    struct SymbolTable* currentST = last_element(symbolTable->stack);
-    for (int i=0; i<currentST->symbols.length; i++) {
-        if (strcmp(currentST->symbols.data[i]->name, name) == 0)
-            return currentST->symbols.data[i];
+void addSymbol (struct SymbolTable* symbolTable, char* name)
+{
+    if (hasSymbol(symbolTable, name))
+        return;
+    struct Symbol *symbol = (struct Symbol*)
+            malloc(sizeof(struct Symbol));
+    symbol->name = (char*) malloc(strlen(name)) + 1;
+    strcpy(symbol->name, name);
+    array_push(symbolTable->symbols, symbol);
+}
+
+void printSymbols (struct SymbolTable *symbolTable) {
+    // Print current block
+    if (symbolTable->symbols.length <= 0) 
+        return;
+    printf("*** Symbol Table ***\n");
+    printf("=================START=================\n");
+    for (int i=0; i<symbolTable->symbols.length; i++) {
+        printf(" %s\n", symbolTable->symbols.data[i]->name);
     }
-    return NULL;
+    printf("==================END==================\n");
 }
 
-void startNewBlock (struct SymbolTable* symbolTable) {
-    struct SymbolTable *currentST = last_element(symbolTable->stack);
-    struct SymbolTable *newST = initSymbolTable(symbolTable->depth + 1);
-    array_push(currentST->stack, newST);
-    array_push(currentST->children, newST);
+struct Constant 
+{
+    char* text;
+    char* type;
+};
+
+struct ConstantTable 
+{
+    array(struct Constant*) constants;
+};
+
+struct ConstantTable* initConstantTable ()
+{
+    struct ConstantTable* constantTable = (struct ConstantTable*)
+            malloc(sizeof(struct ConstantTable));
+    constantTable->constants = (typeof(constantTable->constants)) array_init();
+    return constantTable;
 }
 
-int stopCurrentBlock (struct SymbolTable* symbolTable) {
-    if (symbolTable->stack.length == 1) 0;
-    array_pop(symbolTable->stack);
-    return 1;
+int hasConstant (struct ConstantTable* constantTable, char* text)
+{
+    for (int i=0; i<constantTable->constants.length; i++) {
+        if (strcmp(constantTable->constants.data[i]->text, text) == 0)
+            return 1;
+    }
+    return 0;
+}
+
+void addConstant (struct ConstantTable* constantTable, char* text)
+{
+    if (hasConstant(constantTable, text))
+        return;
+    struct Constant *constant = (struct Constant*)
+            malloc(sizeof(struct Constant));
+    constant->text = (char*) malloc(strlen(text)) + 1;
+    strcpy(constant->text, text);
+    array_push(constantTable->constants, constant);
+}
+
+void printConstants (struct ConstantTable* constantTable) {
+    // Print current block
+    if (constantTable->constants.length <= 0) 
+        return;
+    printf("*** Constant Table ***\n");
+    printf("=================START=================\n");
+    for (int i=0; i<constantTable->constants.length; i++) {
+        printf(" %s\n", constantTable->constants.data[i]->text);
+    }
+    printf("==================END==================\n");
 }
 
 struct SymbolTable* symbolTable = NULL;
+struct ConstantTable* constantTable = NULL;
 
 %}
 blank_char			[ \t\n]
@@ -179,6 +183,8 @@ nondouble			{digit}+(\.{integer})(\.{integer})+
 
 string_constant		\".*\"
 
+constant            {integer}|{unsigned_integer}|{signed_integer}|{positive_integer}|{double}|{unsigned_double}|{signed_double}|{string_constant}
+
 assignment_operator	=
 operator			(\+|\-|\*|\/|\+\+|\-\-|\%)
 relational_operator	(\<|\<=|\>|\>=|==|!=)
@@ -202,29 +208,26 @@ else                else
 {if_construct}      printf("if_construct : %s\n", yytext);
 {else}           printf("else_construct : %s\n", yytext);
 
-{start_block}		{startNewBlock (symbolTable);};
-{end_block}			{stopCurrentBlock (symbolTable);};
+{start_block}		;
+{end_block}			;
 
 {data_type}    		{printf("data_type : %s\n", yytext);}
 {keyword}      		{printf("keyword : %s\n", yytext);}
 {identifier}		{
-    if (findSymbol(symbolTable, yytext) != NULL)
-        printf("Redeclaration error for %s\n", yytext);
-    else
-        addSymbol(symbolTable, yytext);
+    addSymbol(symbolTable, yytext);
 	printf("identifier : %s\n", yytext);
 };
 
 {parameter_list}	printf("parameter_list : %s\n", yytext);
 
 {nondouble}			printf("Illegal double constant : %s\n", yytext);
-{double}			printf("double : %s\n", yytext);
-{signed_double}		printf("signed_double : %s\n", yytext);
+{double}			{printf("double : %s\n", yytext); addConstant(constantTable, yytext);}
+{signed_double}		{printf("signed_double : %s\n", yytext); addConstant(constantTable, yytext);}
 
-{integer}			printf("integer : %s\n", yytext);
-{signed_integer}	printf("signed_integer : %s\n", yytext);
+{integer}			{printf("integer : %s\n", yytext); addConstant(constantTable, yytext);}
+{signed_integer}	{printf("signed_integer : %s\n", yytext); addConstant(constantTable, yytext);}
 
-{string_constant}	printf("string_constant : %s\n", yytext);
+{string_constant}	{printf("string_constant : %s\n", yytext); addConstant(constantTable, yytext);}
 
 {single_comment}	printf("single_comment : %s\n", yytext);
 {multi_comment}		printf("multi_comment : %s\n", yytext);
@@ -244,14 +247,15 @@ else                else
 %%
 
 int main () {
-	symbolTable = initSymbolTable(0);
+	symbolTable = initSymbolTable();
+	constantTable = initConstantTable();
 	yyin = fopen("test.c", "r");
 	yylex();
 	fclose(yyin);
 }
 
 int yywrap () {
-	printf("\n*** SYMBOL TABLE ***\n");
 	printSymbols(symbolTable);
+	printConstants(constantTable);
 	return 1;
 }
