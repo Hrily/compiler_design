@@ -14,3 +14,8 @@ Testcases Folder contains the follows files:
 Lexer Folder contains :
 
 + lex.l : This program specifies the rules required to perform lexical analysis for the given specifications.
+
+**Lexical** **Analysis** **Report** : [Click Here](https://docs.google.com/document/d/1orDi-AWyso7abpl279MkgajPmpkgWpKAcKul8nPaRKA/edit?usp=sharing)
+
+
+
