@@ -1,142 +1,164 @@
-Multiline Comment - /******************************
- * Authors
- * Manoj Kumar 15CO128
- * Hrishikesh Hiraskar 15CO121
- ******************************/
- 
-header - #include<stdio.h>
-
-Datatype - int 
-Keyword - main
-Parentheses - (
-Parentheses - )
-Parentheses - {
-function_call - printf("Test case for scanning\n")
-Delimeter - ;
-    
-Single line Comment - // Line to validate the tokenization of single line comments
-    
-Multiline Comment - /* This comment tests 
+single_comment : // ******************************
+single_comment : // Authors
+single_comment : // Manoj Kumar 15CO128
+single_comment : // Hrishikesh Hiraskar 15CO121
+single_comment : // ******************************
+header : #include<stdio.h>
+data_type : int
+identifier : main
+identifier : printf
+string_constant : "Test case for scanning\n"
+single_comment : // Line to validate the tokenization of single line comments
+multi_comment : /* This comment tests 
      * multi line comments
      */
-
-Single line Comment - // Identifiers
-Datatype - double 
-Identifier - aBA
-Operator - = 
-Double constant - 1e5
-Delimeter - ;
-Datatype - char 
-Identifier - _12
-Operator - =
-Character constant - 'x'
-Delimeter - ;
-Identifier - A_1
-Operator - = 
-Double constant - 12.0
-Delimeter - ;
-
-
-Single line comment - // Array
-Datatype - int 
-Identifier - arr
-Array definition - [5] 
-Operator - = 
-Array - {1, 2, 3, 4, 5}
-Delimeter - ;
-
-Single line comment - // Operators Tests
-Datatype - int 
-Identifier - a 
-Operator - = 
-Integer Constant - 2
-Delimeter - ;
-Datatype - int 
-Identifier - b 
-Operator - = 
-Integer Constant - 1
-Delimeter - ;
-Datatype - int
-Identifier - c
-Operator - = 
-Expression - a + b
-Delimeter - ;
-Identifier - c 
-Operator = 
-Expression - a % b
-Delimeter - ;
-Identifier - c 
-Operator - = 
-Identifier - a
-Operator - ++
-Delimeter - ;
-
-Datatype - int
-Identifier - flag 
-Operator - = 
-Integer Constant - 1
-Delimeter - ;
-Single line comment - // If condition
-If Condition - if (flag == 1)
-		printf("Hello World!\n")
-Delimeter - ;
-    
-Single line comment - // If else condition
-If else condition - if (flag == 1)
-		printf("Hello World!\n");
-	else 
-		printf("Bye World!\n");
-
-Single line comment - // Else if ladder
-Else If Ladder - if (flag == 1)
-		printf("Hello World!\n");
-	else if (flag == 0)
-		printf("Hi World!\n");
-	else 
-		printf("Bye World!\n");
-
-Single line comment - // For loop
-For Loop - for (int i = 0; i < 5; i++) {
-		printf("*");
-	}
-Function Call - printf("\n")
-Delimeter - ;
-
-Single line comment - // Nested For loop
-For loop - for (int i = 5; i >= 0; i--) {
-		for (int j = 0; j < i; j++) {
-			printf("*");
-		}
-		printf("\n");
-	}
-
-Single line comment - // While loop
-Datatype - int 
-Identifier -  i 
-Operator - = 
-Integer Constant - 5;
-While loop - while (i >= 0) {
-        printf("*");
-        i--;
-    }
-Function Call - printf("\n")
-Delimeter - ;
-
-Single line comment - // Nested while loop
-Identifier - i 
-Operator - = 
-Integer Constant - 5;
-While loop - while (i >= 0) {
-		int j = i;
-		while (j >= 0) {
-			printf("*");
-			j--;
-		}
-		printf("\n");
-		i--;
-	}
-
-Keyword - return 
-Integer Constant - 0
-Delimeter - ;
-Parentheses - }
+single_comment : // Identifiers
+data_type : double
+identifier : aBA
+assignment_operator : =
+double : 1e5
+data_type : char
+identifier : _12
+assignment_operator : =
+char_constant : 'x'
+data_type : double
+identifier : A_1
+assignment_operator : =
+double : 12.0
+single_comment : // Array
+data_type : int
+identifier : arr
+integer : 5
+assignment_operator : =
+integer : 1
+integer : 2
+integer : 3
+integer : 4
+integer : 5
+single_comment : // Operators Tests
+data_type : int
+identifier : a
+assignment_operator : =
+integer : 2
+data_type : int
+identifier : b
+assignment_operator : =
+integer : 1
+data_type : int
+identifier : c
+assignment_operator : =
+identifier : a
+operator : +
+identifier : b
+identifier : c
+assignment_operator : =
+identifier : a
+operator : %
+identifier : b
+identifier : c
+assignment_operator : =
+identifier : a
+operator : ++
+data_type : int
+identifier : flag
+assignment_operator : =
+integer : 1
+single_comment : // If condition
+if_construct : if (flag == 1)
+identifier : printf
+string_constant : "Hello World!\n"
+single_comment : // If else condition
+if_construct : if (flag == 1)
+identifier : printf
+string_constant : "Hello World!\n"
+else_construct : else
+identifier : printf
+string_constant : "Bye World!\n"
+single_comment : // Else if ladder
+if_construct : if (flag == 1)
+identifier : printf
+string_constant : "Hello World!\n"
+else_if_construct : else if (flag == 0)
+identifier : printf
+string_constant : "Hi World!\n"
+else_construct : else
+identifier : printf
+string_constant : "Bye World!\n"
+single_comment : // For loop
+for loop : for (int i = 0; i < 5; i++)
+identifier : printf
+string_constant : "*"
+identifier : printf
+string_constant : "\n"
+single_comment : // Nested For loop
+for loop : for (int i = 5; i >= 0; i--)
+for loop : for (int j = 0; j < i; j++)
+identifier : printf
+string_constant : "*"
+identifier : printf
+string_constant : "\n"
+single_comment : // While loop
+data_type : int
+identifier : i
+assignment_operator : =
+integer : 5
+while loop : while (i >= 0)
+identifier : printf
+string_constant : "*"
+identifier : i
+operator : --
+identifier : printf
+string_constant : "\n"
+single_comment : // Nested while loop
+identifier : i
+assignment_operator : =
+integer : 5
+while loop : while (i >= 0)
+data_type : int
+identifier : j
+assignment_operator : =
+identifier : i
+while loop : while (j >= 0)
+identifier : printf
+string_constant : "*"
+identifier : j
+operator : --
+identifier : printf
+string_constant : "\n"
+identifier : i
+operator : --
+keyword : return
+integer : 0
+*** Symbol Table ***
+=================START=================
+ main
+ printf
+ aBA
+ _12
+ A_1
+ arr
+ a
+ b
+ c
+ flag
+ i
+ j
+==================END==================
+*** Constant Table ***
+=================START=================
+ "Test case for scanning\n"
+ 1e5
+ 'x'
+ 12.0
+ 5
+ 1
+ 2
+ 3
+ 4
+ "Hello World!\n"
+ "Bye World!\n"
+ "Hi World!\n"
+ "*"
+ "\n"
+ 0
+==================END==================
