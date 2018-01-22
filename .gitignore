@@ -1,2 +1,5 @@
 lexer/a.out
 lexer/lex.yy.c
+lex.yy.c
+a.out
+y.tab.*
