@@ -1,7 +1,7 @@
 %{
 
-#include "y.tab.h"
 #include <stdio.h>
+
 #include <string.h>
 #include <stdlib.h>
 
@@ -256,9 +256,9 @@ while               while({space}*)\(\)
 int main () {
 	symbolTable = initSymbolTable();
 	constantTable = initConstantTable();
-	// yyin = fopen("test.c", "r");
-	// yylex();
-	// fclose(yyin);
+	yyin = fopen("test.c", "r");
+	yylex();
+	fclose(yyin);
 }
 
 int yywrap () {
