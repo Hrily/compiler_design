@@ -150,6 +150,12 @@ void printConstants (struct ConstantTable* constantTable) {
 struct SymbolTable* symbolTable = NULL;
 struct ConstantTable* constantTable = NULL;
 
+char* copy (char* s) {
+    char* r = (char*) malloc(strlen(s) + 1);
+    strcpy(r, s);
+    return r;
+}
+
 %}
 blank_char			[ \t\n]
 letter 				[a-z|A-Z]
@@ -204,6 +210,7 @@ for                 for({space}*)\(.*;.*;.*\)
 while               while({space}*)\(.*\)
 
 %%
+\n                  return -1;
 {blank_char} 		;
 
 
@@ -225,27 +232,45 @@ while               while({space}*)\(.*\)
 {identifier}		{
     addSymbol(symbolTable, yytext);
 	printf("identifier : %s\n", yytext);
+    yylval.sval = copy(yytext);
     return ID;
 };
 
 {parameter_list}	printf("parameter_list : %s\n", yytext);
 
 {nondouble}			printf("Illegal double constant : %s\n", yytext);
-{double}			{printf("double : %s\n", yytext); addConstant(constantTable, yytext); return DOUBLE}
-{signed_double}		{printf("signed_double : %s\n", yytext); addConstant(constantTable, yytext); return SIGNED_DOUBLE}
+{double}			{
+    printf("double : %s\n", yytext); 
+    addConstant(constantTable, yytext); 
+    yylval.dval = atoi(yytext);
+    return DOUBLE;
+}
+{integer}			{
+    printf("integer : %s\n", yytext); 
+    addConstant(constantTable, yytext); 
+    yylval.ival = atoi(yytext);
+    return INT;
+}
 
-{integer}			{printf("integer : %s\n", yytext); addConstant(constantTable, yytext); return INT}
-{signed_integer}	{printf("signed_integer : %s\n", yytext); addConstant(constantTable, yytext); return SIGNED_INT}
-
-{string_constant}	{printf("string_constant : %s\n", yytext); addConstant(constantTable, yytext); return STRING}
-{char_constant}	    {printf("char_constant : %s\n", yytext); addConstant(constantTable, yytext); return CHAR}
+{string_constant}	{
+    printf("string_constant : %s\n", yytext); 
+    addConstant(constantTable, yytext); 
+    yylval.sval = copy(yytext);
+    return STRING;
+}
+{char_constant}	    {
+    printf("char_constant : %s\n", yytext); \
+    addConstant(constantTable, yytext); 
+    yylval.cval = yytext[0];
+    return CHAR;
+}
 
 
 {single_comment}	printf("single_comment : %s\n", yytext);
 {multi_comment}		printf("multi_comment : %s\n", yytext);
 
 {assignment_operator} printf("assignment_operator : %s\n", yytext);
-{operator}			printf("operator : %s\n", yytext);
+{operator}			{printf("operator : %s\n", yytext); return yytext[0];}
 {relational_operator} printf("reltional_operator : %s\n", yytext);
 {logical_operator}	printf("logical_operator : %s\n", yytext);
 {bitwise_operator}	printf("bitwise_operator : %s\n", yytext);
@@ -258,16 +283,16 @@ while               while({space}*)\(.*\)
 
 %%
 
-int main () {
-	symbolTable = initSymbolTable();
-	constantTable = initConstantTable();
-	// yyin = fopen("test.c", "r");
-	// yylex();
-	// fclose(yyin);
-}
+// int main () {
+// 	symbolTable = initSymbolTable();
+// 	constantTable = initConstantTable();
+// 	yyin = fopen("test.c", "r");
+// 	yylex();
+// 	fclose(yyin);
+// }
 
 int yywrap () {
 	printSymbols(symbolTable);
 	printConstants(constantTable);
-	return 1;
+	return 0;
 }
