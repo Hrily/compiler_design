@@ -1,8 +1,8 @@
-/******************************
- * Authors
- * Manoj Kumar 15CO128
- * Hrishikesh Hiraskar 15CO121
- ******************************/
+// ******************************
+// Authors
+// Manoj Kumar 15CO128
+// Hrishikesh Hiraskar 15CO121
+// ******************************
 
 #include<stdio.h>
 

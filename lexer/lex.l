@@ -181,9 +181,10 @@ unsigned_double		{double}
 signed_double		(\+|\-)?{double}
 nondouble			{digit}+(\.{integer})(\.{integer})+
 
+char_constant       '(.|(\\a)|(\\b)|(\\f)|(\\n)|(\\r)|(\\t)|(\\v)|(\\')|(\\\")|(\\\\)|(\\\?))'
 string_constant		\".*\"
 
-constant            {integer}|{unsigned_integer}|{signed_integer}|{positive_integer}|{double}|{unsigned_double}|{signed_double}|{string_constant}
+constant            {integer}|{unsigned_integer}|{signed_integer}|{positive_integer}|{double}|{unsigned_double}|{signed_double}|{char_constant}|{string_constant}
 
 assignment_operator	=
 operator			(\+|\-|\*|\/|\+\+|\-\-|\%)
@@ -196,10 +197,11 @@ multi_comment		\/\*(.|\n)+\*\/
 
 if_construct        if({space}*)?\((.)+\)
 else                else
+else_if             else({space}+)if({space}*)?\((.)+\)
 
 for                 for({space}*)\(.*;.*;.*\)
 
-while               while({space}*)\(\)
+while               while({space}*)\(.*\)
 
 %%
 {blank_char} 		;
@@ -209,6 +211,7 @@ while               while({space}*)\(\)
 
 
 {if_construct}      printf("if_construct : %s\n", yytext);
+{else_if}           printf("else_if_construct : %s\n", yytext);
 {else}              printf("else_construct : %s\n", yytext);
 
 {for}               printf("for loop : %s\n", yytext);
@@ -235,13 +238,15 @@ while               while({space}*)\(\)
 {signed_integer}	{printf("signed_integer : %s\n", yytext); addConstant(constantTable, yytext); return SIGNED_INT}
 
 {string_constant}	{printf("string_constant : %s\n", yytext); addConstant(constantTable, yytext); return STRING}
+{char_constant}	    {printf("char_constant : %s\n", yytext); addConstant(constantTable, yytext); return CHAR}
+
 
 {single_comment}	printf("single_comment : %s\n", yytext);
 {multi_comment}		printf("multi_comment : %s\n", yytext);
 
 {assignment_operator} printf("assignment_operator : %s\n", yytext);
 {operator}			printf("operator : %s\n", yytext);
-{relational_operator} printf("relational_operator : %s\n", yytext);
+{relational_operator} printf("reltional_operator : %s\n", yytext);
 {logical_operator}	printf("logical_operator : %s\n", yytext);
 {bitwise_operator}	printf("bitwise_operator : %s\n", yytext);
 

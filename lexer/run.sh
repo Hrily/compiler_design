@@ -1,3 +1,3 @@
 lex lex.l
 cc lex.yy.c
-./a.out
+./a.out $1

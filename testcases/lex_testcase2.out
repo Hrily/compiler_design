@@ -1,50 +1,40 @@
-Multiline Comment - /******************************
- * Authors
- * Manoj Kumar 15CO128
- * Hrishikesh Hiraskar 15CO121
- ******************************/
+single_comment : // ******************************
+single_comment : // Authors
+single_comment : // Manoj Kumar 15CO128
+single_comment : // Hrishikesh Hiraskar 15CO121
+single_comment : // ******************************
+multi_comment : /* 
 
+    This file includes scenarios that throw lexical errors such as
 
-Error : Illegal header
+    * invalid literals (invalid constants)
+    
 
-Datatype - int 
-Keyword - main
-Parentheses - (
-Parentheses - )
-Parentheses - {
-
-Keyword - double
-
-Error : Illegal token 1a
-
-Identifier - a 
-Delimiter - ;
-Single line Comment - // invalid Identifier
-
-Identifier - a
-Operator - = 
-Error : Illegal token 1e*3
-
-Delimiter - ;
-Single line Comment - //illegal floating constant
-
-Identifier - a
-Operator - = 
-Error : Illegal token 1.0.01
-
-Delimiter - ;
-Single line Comment - //illegal floating constant
-
-Error : Illegal escape sequence
-Delimiter - ;
-Single line Comment - //illegal escape sequences
-
-Keyword - return 
-Integer Constant - 0
-Delimeter - ;
-Parentheses - }
-
-
-
-
-
+*/
+header : #include<stdio.h>
+data_type : int
+identifier : main
+data_type : double
+integer : 1
+identifier : a
+identifier : a
+identifier : a
+assignment_operator : =
+Illegal double constant : 192.168.0.1
+single_comment : //illegal floating constant
+identifier : a
+assignment_operator : =
+Illegal double constant : 1.0.01
+single_comment : //illegal floating constant
+keyword : return
+integer : 0
+*** Symbol Table ***
+=================START=================
+ main
+ a
+==================END==================
+*** Constant Table ***
+=================START=================
+ 1
+ 0
+==================END==================
