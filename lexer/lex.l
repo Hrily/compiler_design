@@ -210,7 +210,7 @@ for                 for({space}*)\(.*;.*;.*\)
 while               while({space}*)\(.*\)
 
 %%
-\n                  return -1;
+[\n]                ;
 {blank_char} 		;
 
 
@@ -278,6 +278,7 @@ while               while({space}*)\(.*\)
 {delimeter}			;
 {comma}				;
 [(){}]|\[|\]        ;
+<<EOF>>             return -1;
 
 [^ \t\n]			printf("Invalid character : %s\n", yytext);
 
@@ -292,7 +293,5 @@ while               while({space}*)\(.*\)
 // }
 
 int yywrap () {
-	printSymbols(symbolTable);
-	printConstants(constantTable);
-	return 0;
+	return -1;
 }

@@ -22,24 +22,29 @@ extern struct SymbolTable* symbolTable;
 extern struct ConstantTable* constantTable;
 extern struct SymbolTable* initSymbolTable();
 extern struct ConstantTable* initConstantTable();
+extern void printConstants(struct ConstantTable*);
+extern void printSymbols(struct SymbolTable*);
 %}
 %%
+start: statement
+     | start statement
+
 
 _E_ : E {
 	printf("Valid expression\n");
 } 
 
+statement : _E_
+
 E : E '+' E
   | E '-' E
-  | E '*' E
-  | E '/' E
-  | E '%' E
   | '(' E ')'
   | ID
   | INT
   | DOUBLE
   | STRING
   | CHAR
+  ;
 
 %%
 
@@ -51,14 +56,9 @@ int main () {
 	yyin = fopen("parser/test.c", "r");
 	symbolTable = initSymbolTable();
 	constantTable = initConstantTable();
-	printf("Enter expression :\n");
-	// do {
-	// 	printf("feof %d\n", feof(yyin));
-	// 	yyparse();
-	// 	printf("feof %d\n", feof(yyin));
-	// } while (!feof(yyin));
-	while (!feof(yyin))
-		yyparse();
-	printf("feof %d\n", feof(yyin));
+	yyparse();
 	
+
+	printSymbols(symbolTable);
+	printConstants(constantTable);
 }
