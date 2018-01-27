@@ -1,3 +1,3 @@
-a+b+B+c
-a+b+B+c
-a+b+B+c
+a+b*c
+a*b+c
+a%b+c

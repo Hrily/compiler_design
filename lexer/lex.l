@@ -44,6 +44,11 @@
 
 #define last_element(array) array.data[array.length-1]
 
+char* copy (char* s) {
+    char* r = (char*) malloc(strlen(s) + 1);
+    strcpy(r, s);
+    return r;
+}
 
 struct Symbol 
 {
@@ -84,6 +89,24 @@ void addSymbol (struct SymbolTable* symbolTable, char* name)
     array_push(symbolTable->symbols, symbol);
 }
 
+struct Symbol* findSymbol (struct SymbolTable* symbolTable, 
+        char* name) {
+    for (int i=0; i<symbolTable->symbols.length; i++) {
+        if (strcmp(symbolTable->symbols.data[i]->name, name) == 0)
+            return symbolTable->symbols.data[i];
+    }
+    return NULL;
+}
+
+void addType (struct SymbolTable* symbolTable, char* name, char* type) 
+{
+	struct Symbol* symbol = findSymbol(symbolTable, name);
+	if (symbol->type != NULL)
+		yyerror("Redeclaration error");
+	else
+		symbol->type = copy(type);
+}
+
 void printSymbols (struct SymbolTable *symbolTable) {
     // Print current block
     if (symbolTable->symbols.length <= 0) 
@@ -91,7 +114,7 @@ void printSymbols (struct SymbolTable *symbolTable) {
     printf("*** Symbol Table ***\n");
     printf("=================START=================\n");
     for (int i=0; i<symbolTable->symbols.length; i++) {
-        printf(" %s\n", symbolTable->symbols.data[i]->name);
+        printf("%s\t%s\n", symbolTable->symbols.data[i]->type, symbolTable->symbols.data[i]->name);
     }
     printf("==================END==================\n");
 }
@@ -149,12 +172,6 @@ void printConstants (struct ConstantTable* constantTable) {
 
 struct SymbolTable* symbolTable = NULL;
 struct ConstantTable* constantTable = NULL;
-
-char* copy (char* s) {
-    char* r = (char*) malloc(strlen(s) + 1);
-    strcpy(r, s);
-    return r;
-}
 
 %}
 blank_char			[ \t\n]
@@ -227,7 +244,11 @@ while               while({space}*)\(.*\)
 {start_block}		;
 {end_block}			;
 
-{data_type}    		{printf("data_type : %s\n", yytext);}
+{data_type}    		{
+    printf("data_type : %s\n", yytext);
+    yylval.dt = copy(yytext);
+    return DATATYPE;
+}
 {keyword}      		{printf("keyword : %s\n", yytext);}
 {identifier}		{
     addSymbol(symbolTable, yytext);
@@ -269,14 +290,14 @@ while               while({space}*)\(.*\)
 {single_comment}	printf("single_comment : %s\n", yytext);
 {multi_comment}		printf("multi_comment : %s\n", yytext);
 
-{assignment_operator} printf("assignment_operator : %s\n", yytext);
+{assignment_operator} {printf("assignment_operator : %s\n", yytext); return yytext[0];}
 {operator}			{printf("operator : %s\n", yytext); return yytext[0];}
-{relational_operator} printf("reltional_operator : %s\n", yytext);
-{logical_operator}	printf("logical_operator : %s\n", yytext);
-{bitwise_operator}	printf("bitwise_operator : %s\n", yytext);
+{relational_operator} {printf("reltional_operator : %s\n", yytext); return yytext[0];}
+{logical_operator}	{printf("logical_operator : %s\n", yytext); return yytext[0];}
+{bitwise_operator}	{printf("bitwise_operator : %s\n", yytext); return yytext[0];}
 
-{delimeter}			;
-{comma}				;
+{delimeter}			return yytext[0];
+{comma}				return yytext[0];
 [(){}]|\[|\]        ;
 <<EOF>>             return -1;
 
