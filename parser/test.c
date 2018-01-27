@@ -1,3 +1,2 @@
-a+b*c
+int a, b, c;
 a*b+c
-a%b+c

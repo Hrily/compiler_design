@@ -40,29 +40,34 @@ start: statement
      | start statement
 
 
-statement : E
-		  | declaration
+statement : 
+		  | statement AE
+		  | statement declaration
 		  ;
 
-E_F : ID
-  	| INT
-  	| DOUBLE
-  	| STRING
-  	| CHAR
-  	;
+_AE_G : ID
+    | INT
+    | DOUBLE
+	| CHAR
+	;
 
+_AE_F : _AE_F '%' _AE_F
+      | _AE_G
+      ;
 
-E_T : E_T '*' E_F
-  | E_T '/' E_F
-  | E_F
-  ;
+_AE_T : _AE_T '*' _AE_T
+      | _AE_T '/' _AE_T
+      | _AE_F
+      ;
 
+_AE : _AE '+' _AE
+   	| _AE '-' _AE
+   	| _AE_T
+   	;
 
-E : E '+' E_T
-  | E '-' E_T
-  | '(' E ')'
-  ;
-  
+AE : _AE {
+	printf("Valid expression\n");
+}  
 
 decl : ID {addType(symbolTable, $1, current_datatype);}
 	 | ID '=' INT {addType(symbolTable, $1, current_datatype);}
