@@ -1,6 +1,6 @@
 %define parse.error verbose
-%left '+' '-'
 %left '*' '/'
+%left '+' '-'
 
 %union {
 	int ival;
@@ -16,6 +16,7 @@
 %token <cval> CHAR
 %token <sval> STRING
 %token <dt>   DATATYPE
+%token INC_DEC_OP
 
 %{
 #include <stdio.h>
@@ -36,38 +37,59 @@ extern void addType(struct SymbolTable*, char*, char*);
 char* current_datatype;
 %}
 %%
-start: statement
-     | start statement
+start: 
+     | statement ';' startd
+	 ;
 
+startd : 
+	   | statement ';' startd
+	   ;
 
-statement : 
-		  | statement AE
-		  | statement declaration
-		  ;
+statement : ID '=' AE
+		  | AE
+          | declaration
+		  ; 
 
-_AE_G : ID
+_NT : ID
+    | ID INC_DEC_OP
+    | INC_DEC_OP ID
     | INT
     | DOUBLE
 	| CHAR
 	;
 
-_AE_F : _AE_F '%' _AE_F
-      | _AE_G
-      ;
+_AE : _P _AEd
+    ;
 
-_AE_T : _AE_T '*' _AE_T
-      | _AE_T '/' _AE_T
-      | _AE_F
-      ;
+_AEd : 
+     | '+' _P _AEd
+	 ;
 
-_AE : _AE '+' _AE
-   	| _AE '-' _AE
-   	| _AE_T
-   	;
+_P : _S _Pd;
+
+_Pd : 
+    | '-' _S _Pd;
+
+_S : _M _Sd;
+
+_Sd : 
+   | '*' _M _Sd
+   ;
+
+_M : _D _Md;
+
+_Md : 
+    | '/' _D _Md
+	;
+
+_D : '(' _AE ')'
+  | _NT
+  ;
 
 AE : _AE {
 	printf("Valid expression\n");
 }  
+
 
 decl : ID {addType(symbolTable, $1, current_datatype);}
 	 | ID '=' INT {addType(symbolTable, $1, current_datatype);}
@@ -85,7 +107,7 @@ datatype : DATATYPE {
 	printf("current_datatype : %s\n", current_datatype);
 }
 
-declaration : datatype decl_list ';' 
+declaration : datatype decl_list
 
 %%
 

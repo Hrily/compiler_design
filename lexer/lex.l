@@ -210,7 +210,8 @@ string_constant		\".*\"
 constant            {integer}|{unsigned_integer}|{signed_integer}|{positive_integer}|{double}|{unsigned_double}|{signed_double}|{char_constant}|{string_constant}
 
 assignment_operator	=
-operator			(\+|\-|\*|\/|\+\+|\-\-|\%)
+operator			(\+|\-|\*|\/|\%)
+inc_dec_op          (\+\+|\-\-)
 relational_operator	(\<|\<=|\>|\>=|==|!=)
 logical_operator 	(&&|\|\||!)
 bitwise_operator	(&|\||\^|~|\<\<|\>\>)
@@ -292,13 +293,14 @@ while               while({space}*)\(.*\)
 
 {assignment_operator} {printf("assignment_operator : %s\n", yytext); return yytext[0];}
 {operator}			{printf("operator : %s\n", yytext); return yytext[0];}
+{inc_dec_op}		{printf("operator : %s\n", yytext); return INC_DEC_OP;}
 {relational_operator} {printf("reltional_operator : %s\n", yytext); return yytext[0];}
 {logical_operator}	{printf("logical_operator : %s\n", yytext); return yytext[0];}
 {bitwise_operator}	{printf("bitwise_operator : %s\n", yytext); return yytext[0];}
 
 {delimeter}			return yytext[0];
 {comma}				return yytext[0];
-[(){}]|\[|\]        ;
+[(){}]|\[|\]        return yytext[0];
 <<EOF>>             return -1;
 
 [^ \t\n]			printf("Invalid character : %s\n", yytext);
