@@ -16,7 +16,8 @@ int main () {
     a += 3;
 
     // Iteration
-    for (int i=0; i<10; i++) {
+    int i;
+    for (i=0; i<10; i++) {
         // Postfix
         a++;
         // Prefix;

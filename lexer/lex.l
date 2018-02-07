@@ -172,6 +172,7 @@ void printConstants (struct ConstantTable* constantTable) {
 
 struct SymbolTable* symbolTable = NULL;
 struct ConstantTable* constantTable = NULL;
+int line = 1;
 
 %}
 blank_char			[ \t\n]
@@ -186,7 +187,7 @@ end_block			\}
 
 keyword				auto|double|int|struct|break|else|long|switch|case|enum|register|typedef|char|extern|return|union|const|float|short|unsigned|continue|for|signed|void|default|goto|sizeof|volatile|do|if|static|while
 
-header 				#include(\<{letter}+\.h\>)|#include\"{letter}+(\.)?{letter}*\"
+header 				#include({space}*)(\<{letter}+\.h\>)|#include({space}*)\"{letter}+(\.)?{letter}*\"
 
 identifier 			({letter}|_)({letter}|{digit}|_)*
 data_type 			(void)|(int)|(char)|(float)|(double)|(struct({space}{identifier}))|(union({space}{identifier}))
@@ -209,7 +210,6 @@ string_constant		\".*\"
 
 constant            {integer}|{unsigned_integer}|{signed_integer}|{positive_integer}|{double}|{unsigned_double}|{signed_double}|{char_constant}|{string_constant}
 
-assignment_operator	=
 operator			(\+|\-|\*|\/|\%)
 inc_dec_op          (\+\+|\-\-)
 relational_operator	(\<|\<=|\>|\>=|==|!=)
@@ -219,31 +219,59 @@ bitwise_operator	(&|\||\^|~|\<\<|\>\>)
 single_comment		\/\/.*
 multi_comment		\/\*(.|\n)+\*\/
 
-if_construct        if({space}*)?\((.)+\)
-else                else
-else_if             else({space}+)if({space}*)?\((.)+\)
+case                "case"
+default             "default"
+if                  "if"
+else                "else"
+switch              "switch"
+while               "while"
+do                  "do"
+for                 "for"
 
-for                 for({space}*)\(.*;.*;.*\)
+goto                "goto"
+continue            "continue"
+break               "break"
+return              "return"
 
-while               while({space}*)\(.*\)
+assignment          =
+assignment_operator	"*="|"/="|"%="|"+="|"-="|"<<="|">>="|"&="|"|="|"^="
+shift_op            "<<"|">>"
+comp_op             "<"|">"|"<="|">="
+equality_op         "=="|"!="
+and_op              "&&"
+or_op               "||"
 
 %%
-[\n]                ;
+[\n]                line++;
 {blank_char} 		;
 
 
 {header} 			printf("header : %s\n", yytext);
 
+{case}              return CASE;
+{default}           return DEFAULT;
+{if}                return IF;
+{else}              return ELSE;
+{switch}            return SWITCH;
+{while}             return WHILE;
+{do}                return DO;
+{for}               return FOR;
 
-{if_construct}      printf("if_construct : %s\n", yytext);
-{else_if}           printf("else_if_construct : %s\n", yytext);
-{else}              printf("else_construct : %s\n", yytext);
+{goto}              return GOTO;
+{continue}          return CONTINUE;
+{break}             return BREAK;
+{return}            return RETURN;
 
-{for}               printf("for loop : %s\n", yytext);
-{while}             printf("while loop : %s\n", yytext);
+{assignment}        return yytext[0];
+{assignment_operator} return ASSIGNMENT;
+{shift_op}          return SHIFT_OP;
+{comp_op}           return COMP_OP;
+{equality_op}       return EQUALITY_OP;
+{and_op}            return AND_OP;
+{or_op}             return OR_OP;
 
-{start_block}		;
-{end_block}			;
+{start_block}		return yytext[0];
+{end_block}			return yytext[0];
 
 {data_type}    		{
     printf("data_type : %s\n", yytext);
@@ -291,7 +319,6 @@ while               while({space}*)\(.*\)
 {single_comment}	printf("single_comment : %s\n", yytext);
 {multi_comment}		printf("multi_comment : %s\n", yytext);
 
-{assignment_operator} {printf("assignment_operator : %s\n", yytext); return yytext[0];}
 {operator}			{printf("operator : %s\n", yytext); return yytext[0];}
 {inc_dec_op}		{printf("operator : %s\n", yytext); return INC_DEC_OP;}
 {relational_operator} {printf("reltional_operator : %s\n", yytext); return yytext[0];}
