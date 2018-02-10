@@ -16,7 +16,7 @@
 %token <cval> CHAR
 %token <sval> STRING
 %token <dt>   DATATYPE
-%token INC_DEC_OP ASSIGNMENT SHIFT_OP COMP_OP EQUALITY_OP AND_OP OR_OP
+%token INC_DEC_OP ASSIGNMENT SHIFT_OP_L SHIFT_OP_R COMP_OP EQUALITY_OP AND_OP OR_OP
 %token CASE DEFAULT IF ELSE SWITCH WHILE DO FOR GOTO CONTINUE BREAK RETURN
 
 %start translation_unit
@@ -27,21 +27,16 @@
 %{
 #include <stdio.h>
 #include <string.h>
+#include "headers/symbol_table.h"
 
 extern FILE*   yyin;
-extern struct SymbolTable* symbolTable;
-extern struct ConstantTable* constantTable;
-extern struct SymbolTable* initSymbolTable();
-extern struct ConstantTable* initConstantTable();
-extern void printConstants(struct ConstantTable*);
-extern void printSymbols(struct SymbolTable*);
-extern struct Symbol* findSymbol(struct SymbolTable*, char*);
-extern char* copy(char*);
-extern void addType(struct SymbolTable*, char*, char*);
 extern int line;
 
+struct SymbolTable* symbolTable = NULL;
+struct ConstantTable* constantTable = NULL;
 
 char* current_datatype;
+
 %}
 %%
 
@@ -55,12 +50,20 @@ global_declaration
     | declaration
     ;
 
+datatype
+    : DATATYPE {
+		current_datatype = copy($1);
+    }
+    ;
+
 function_definition
-    : DATATYPE declarator compound_statement
+    : datatype declarator compound_statement
     ;
 
 declarator
-    : ID
+    : ID {
+		addType(symbolTable, $1, current_datatype);
+    }
     | declarator '[' constant_expression ']'
     | declarator '[' ']'
     | declarator '(' parameter_list ')'
@@ -69,7 +72,7 @@ declarator
     ;
 
 declaration 
-    : DATATYPE init_list ';'
+    : datatype init_list ';'
     ;
 
 declaration_list
@@ -141,7 +144,6 @@ statement_list
     | statement statement_list
     ;
 
-
 labeled_statement
     : ID ':' statement
     | CASE constant_expression ':' statement
@@ -173,9 +175,6 @@ jump_statement
 	| RETURN ';'
 	| RETURN expression ';'
 	;
-
-
-
 
 primary_expression
 	: ID
@@ -246,11 +245,6 @@ cast_expression
 	| '(' DATATYPE ')' cast_expression
 	;
 
-
-
-
-
-
 multiplicative_expression
 	: cast_expression
 	| multiplicative_expression '*' cast_expression
@@ -266,7 +260,8 @@ additive_expression
 
 shift_expression
 	: additive_expression
-	| shift_expression SHIFT_OP additive_expression
+	| shift_expression SHIFT_OP_L additive_expression
+	| shift_expression SHIFT_OP_R additive_expression
 	;
 
 relational_expression

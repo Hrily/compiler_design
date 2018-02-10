@@ -2,12 +2,29 @@
 %left '*' '/'
 %left '+' '-'
 
+%{
+#include <stdio.h>
+#include <string.h>
+#include "headers/symbol_table.h"
+#include "headers/parse_tree.h"
+
+extern FILE*   yyin;
+extern int line;
+
+struct SymbolTable* symbolTable = NULL;
+struct ConstantTable* constantTable = NULL;
+
+char* current_datatype;
+
+%}
+
 %union {
 	int ival;
 	double dval;
 	char cval;
 	char *sval;
 	char* dt;
+	struct tree* a_tree;
 }
 
 %token <sval> ID
@@ -16,33 +33,16 @@
 %token <cval> CHAR
 %token <sval> STRING
 %token <dt>   DATATYPE
-%token INC_DEC_OP ASSIGNMENT SHIFT_OP COMP_OP EQUALITY_OP AND_OP OR_OP
+%token INC_DEC_OP ASSIGNMENT SHIFT_OP_L SHIFT_OP_R COMP_OP EQUALITY_OP AND_OP OR_OP
 %token CASE DEFAULT IF ELSE SWITCH WHILE DO FOR GOTO CONTINUE BREAK RETURN
+
+%type <a_tree> conditional_expression additive_expression multiplicative_expression logical_or_expression shift_expression relational_expression logical_and_expression equality_expression and_expression exclusive_or_expression inclusive_or_expression cast_expression unary_expression primary_expression expression postfix_expression assignment_expression
 
 %start translation_unit
 
 %nonassoc "then"
 %nonassoc ELSE
 
-%{
-#include <stdio.h>
-#include <string.h>
-
-extern FILE*   yyin;
-extern struct SymbolTable* symbolTable;
-extern struct ConstantTable* constantTable;
-extern struct SymbolTable* initSymbolTable();
-extern struct ConstantTable* initConstantTable();
-extern void printConstants(struct ConstantTable*);
-extern void printSymbols(struct SymbolTable*);
-extern struct Symbol* findSymbol(struct SymbolTable*, char*);
-extern char* copy(char*);
-extern void addType(struct SymbolTable*, char*, char*);
-extern int line;
-
-
-char* current_datatype;
-%}
 %%
 
 translation_unit
@@ -55,12 +55,20 @@ global_declaration
     | declaration
     ;
 
+datatype
+    : DATATYPE {
+	current_datatype = copy($1);
+    }
+    ;
+
 function_definition
-    : DATATYPE declarator compound_statement
+    : datatype declarator compound_statement
     ;
 
 declarator
-    : ID
+    : ID {
+	addType(symbolTable, $1, current_datatype);
+    }
     | declarator '[' constant_expression ']'
     | declarator '[' ']'
     | declarator '(' parameter_list ')'
@@ -69,7 +77,7 @@ declarator
     ;
 
 declaration 
-    : DATATYPE init_list ';'
+    : datatype init_list ';'
     ;
 
 declaration_list
@@ -141,7 +149,6 @@ statement_list
     | statement statement_list
     ;
 
-
 labeled_statement
     : ID ':' statement
     | CASE constant_expression ':' statement
@@ -174,26 +181,23 @@ jump_statement
 	| RETURN expression ';'
 	;
 
-
-
-
 primary_expression
-	: ID
-	| INT
-    | DOUBLE
-	| STRING
-	| CHAR
-	| '(' expression ')'
+	: ID {$$ = make_variable($1);}
+	| INT {$$ = make_number($1);}
+    | DOUBLE {$$ = make_number($1);}
+	| STRING {$$ = make_variable($1);}
+	| CHAR {$$ = make_number($1);}
+	| '(' expression ')' {$$ = $2;}
 	;
 
 expression
-    : assignment_expression
-    | expression ',' assignment_expression
+    : assignment_expression {$$ = $1;}
+    | expression ',' assignment_expression {$$ = $3;}
     ;
 
 assignment_expression
-	: conditional_expression
-	| unary_expression assignment_operator assignment_expression
+	: conditional_expression {$$ = $1;}
+	| unary_expression assignment_operator assignment_expression {$$ = $3;}
 	;
 
 assignment_operator
@@ -202,7 +206,12 @@ assignment_operator
     ;
 
 conditional_expression
-	: logical_or_expression
+	: logical_or_expression {
+	    printf("*** Parse Tree ***\n");
+	    printtree($1, 1);
+	    printf("***\n");
+	    printf("\n");
+	 }
 	| logical_or_expression '?' expression ':' conditional_expression
 	;
 
@@ -211,12 +220,12 @@ constant_expression
 	;
 
 postfix_expression
-	: primary_expression
-	| postfix_expression '[' expression ']'
-	| postfix_expression '(' ')'
-	| postfix_expression '(' argument_expression_list ')'
-	| postfix_expression '.' ID
-	| postfix_expression INC_DEC_OP
+	: primary_expression {$$ = $1;}
+	| postfix_expression '[' expression ']' {$$ = $1;}
+	| postfix_expression '(' ')' {$$ = $1;}
+	| postfix_expression '(' argument_expression_list ')' {$$ = $1;}
+	| postfix_expression '.' ID {$$ = $1;}
+	| postfix_expression INC_DEC_OP {$$ = $1;}
     ;
 
 argument_expression_list
@@ -225,11 +234,11 @@ argument_expression_list
     ;
 
 unary_expression
-	: postfix_expression
-	| INC_DEC_OP unary_expression
-	| unary_operator cast_expression
-	| "sizeof" unary_expression
-	| "sizeof" '(' DATATYPE ')'
+	: postfix_expression {$$ = $1;}
+	| INC_DEC_OP unary_expression {$$ = $2;}
+	| unary_operator cast_expression {$$ = $2;}
+	| "sizeof" unary_expression {$$ = $2;}
+	| "sizeof" '(' DATATYPE ')' {$$ = make_variable($3);}
 	;
 
 unary_operator
@@ -242,66 +251,63 @@ unary_operator
 	;
 
 cast_expression
-	: unary_expression
-	| '(' DATATYPE ')' cast_expression
+	: unary_expression {$$ = $1;}
+	| '(' DATATYPE ')' cast_expression {$$ = $4;};
 	;
 
-
-
-
-
-
 multiplicative_expression
-	: cast_expression
-	| multiplicative_expression '*' cast_expression
-	| multiplicative_expression '/' cast_expression
-	| multiplicative_expression '%' cast_expression
+	: cast_expression {$$ = $1;}
+	| multiplicative_expression '*' cast_expression {$$ = make_operator($1, "*", $3);}
+	| multiplicative_expression '/' cast_expression {$$ = make_operator($1, "/", $3);}
+	| multiplicative_expression '%' cast_expression {$$ = make_operator($1, "%", $3);}
 	;
 
 additive_expression
-	: multiplicative_expression
-	| additive_expression '+' multiplicative_expression
-	| additive_expression '-' multiplicative_expression
+	: multiplicative_expression {$$ = $1;}
+	| additive_expression '+' multiplicative_expression {$$ = make_operator($1, "+", $3);}
+	| additive_expression '-' multiplicative_expression {$$ = make_operator($1, "-", $3);}
 	;
 
 shift_expression
-	: additive_expression
-	| shift_expression SHIFT_OP additive_expression
+	: additive_expression {$$ = $1;}
+	| shift_expression SHIFT_OP_L additive_expression {$$ = make_operator($1, "<<", $3);}
+	| shift_expression SHIFT_OP_R additive_expression {$$ = make_operator($1, ">>", $3);}
+
 	;
 
 relational_expression
-	: shift_expression
-	| relational_expression COMP_OP shift_expression
+	: shift_expression {$$ = $1;}
+	| relational_expression COMP_OP shift_expression {$$ = make_operator($1, "comp", $3);}
 	;
 
 equality_expression
-	: relational_expression
-	| equality_expression EQUALITY_OP relational_expression
+	: relational_expression {$$ = $1;}
+	| equality_expression EQUALITY_OP relational_expression {$$ = make_operator($1, "==/!=", $3);}
 	;
 
 and_expression
-	: equality_expression
-	| and_expression '&' equality_expression
+	: equality_expression {$$ = $1;}
+	| and_expression '&' equality_expression {$$ = make_operator($1, "&", $3);}
 	;
 
 exclusive_or_expression
-	: and_expression
-	| exclusive_or_expression '^' and_expression
+	: and_expression {$$ = $1;}
+	| exclusive_or_expression '^' and_expression {$$ = make_operator($1, "^", $3);}
 	;
 
 inclusive_or_expression
-	: exclusive_or_expression
-	| inclusive_or_expression '|' exclusive_or_expression
+	: exclusive_or_expression {$$ = $1;}
+	| inclusive_or_expression '|' exclusive_or_expression {$$ = make_operator($1, "|", $3);}
 	;
 
 logical_and_expression
-	: inclusive_or_expression
-	| logical_and_expression AND_OP inclusive_or_expression
+	: inclusive_or_expression {$$ = $1;}
+	| logical_and_expression AND_OP inclusive_or_expression {$$ = make_operator($1, "&&", $3);}
 	;
 
 logical_or_expression
-	: logical_and_expression
-	| logical_or_expression OR_OP logical_and_expression
+	: logical_and_expression {$$ = $1;}
+	| logical_or_expression OR_OP logical_and_expression {$$ = make_operator($1, "||", $3);}
 	;
 
 %%

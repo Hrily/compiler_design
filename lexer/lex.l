@@ -1,177 +1,13 @@
 %{
 
 #include "y.tab.h"
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
 
-#define typeof __typeof__
+extern struct SymbolTable* symbolTable;
+extern struct ConstantTable* constantTable;
+extern void addSymbol(struct SymbolTable*, char*);
+extern void addConstant(struct ConstantTable*, char*);
+extern char* copy(char*);
 
-#define PUTTAB(n) {for(int _i_=0;_i_<n;_i_++) {printf("\t");}}
-
-#define array(type)  \
-  struct {           \
-      type* data;    \
-      size_t length; \
-  }
-
-#define array_init() \
-  {                  \
-      .data = NULL,  \
-      .length = 0    \
-  }
-
-#define array_free(array) \
-  do {                    \
-      free(array.data);   \
-      array.data = NULL;  \
-      array.length = 0;   \
-  } while (0)
-
-#define array_push(array, element)                \
-  do {                                            \
-      array.data = realloc(array.data,            \
-                           sizeof(*array.data) *  \
-                             (array.length + 1)); \
-      array.data[array.length] = element;         \
-      array.length++;                             \
-  } while (0)
-
-#define array_pop(array)    \
-{                           \
-    array.length--;         \
-}
-
-#define last_element(array) array.data[array.length-1]
-
-char* copy (char* s) {
-    char* r = (char*) malloc(strlen(s) + 1);
-    strcpy(r, s);
-    return r;
-}
-
-struct Symbol 
-{
-    char* name;
-    char* type;
-};
-
-struct SymbolTable 
-{
-    array(struct Symbol*) symbols;
-};
-
-struct SymbolTable* initSymbolTable ()
-{
-    struct SymbolTable* symbolTable = (struct SymbolTable*)
-            malloc(sizeof(struct SymbolTable));
-    symbolTable->symbols = (typeof(symbolTable->symbols)) array_init();
-    return symbolTable;
-}
-
-int hasSymbol (struct SymbolTable* symbolTable, char* name)
-{
-    for (int i=0; i<symbolTable->symbols.length; i++) {
-        if (strcmp(symbolTable->symbols.data[i]->name, name) == 0)
-            return 1;
-    }
-    return 0;
-}
-
-void addSymbol (struct SymbolTable* symbolTable, char* name)
-{
-    if (hasSymbol(symbolTable, name))
-        return;
-    struct Symbol *symbol = (struct Symbol*)
-            malloc(sizeof(struct Symbol));
-    symbol->name = (char*) malloc(strlen(name)) + 1;
-    strcpy(symbol->name, name);
-    array_push(symbolTable->symbols, symbol);
-}
-
-struct Symbol* findSymbol (struct SymbolTable* symbolTable, 
-        char* name) {
-    for (int i=0; i<symbolTable->symbols.length; i++) {
-        if (strcmp(symbolTable->symbols.data[i]->name, name) == 0)
-            return symbolTable->symbols.data[i];
-    }
-    return NULL;
-}
-
-void addType (struct SymbolTable* symbolTable, char* name, char* type) 
-{
-	struct Symbol* symbol = findSymbol(symbolTable, name);
-	if (symbol->type != NULL)
-		yyerror("Redeclaration error");
-	else
-		symbol->type = copy(type);
-}
-
-void printSymbols (struct SymbolTable *symbolTable) {
-    // Print current block
-    if (symbolTable->symbols.length <= 0) 
-        return;
-    printf("*** Symbol Table ***\n");
-    printf("=================START=================\n");
-    for (int i=0; i<symbolTable->symbols.length; i++) {
-        printf("%s\t%s\n", symbolTable->symbols.data[i]->type, symbolTable->symbols.data[i]->name);
-    }
-    printf("==================END==================\n");
-}
-
-struct Constant 
-{
-    char* text;
-    char* type;
-};
-
-struct ConstantTable 
-{
-    array(struct Constant*) constants;
-};
-
-struct ConstantTable* initConstantTable ()
-{
-    struct ConstantTable* constantTable = (struct ConstantTable*)
-            malloc(sizeof(struct ConstantTable));
-    constantTable->constants = (typeof(constantTable->constants)) array_init();
-    return constantTable;
-}
-
-int hasConstant (struct ConstantTable* constantTable, char* text)
-{
-    for (int i=0; i<constantTable->constants.length; i++) {
-        if (strcmp(constantTable->constants.data[i]->text, text) == 0)
-            return 1;
-    }
-    return 0;
-}
-
-void addConstant (struct ConstantTable* constantTable, char* text)
-{
-    if (hasConstant(constantTable, text))
-        return;
-    struct Constant *constant = (struct Constant*)
-            malloc(sizeof(struct Constant));
-    constant->text = (char*) malloc(strlen(text)) + 1;
-    strcpy(constant->text, text);
-    array_push(constantTable->constants, constant);
-}
-
-void printConstants (struct ConstantTable* constantTable) {
-    // Print current block
-    if (constantTable->constants.length <= 0) 
-        return;
-    printf("*** Constant Table ***\n");
-    printf("=================START=================\n");
-    for (int i=0; i<constantTable->constants.length; i++) {
-        printf(" %s\n", constantTable->constants.data[i]->text);
-    }
-    printf("==================END==================\n");
-}
-
-struct SymbolTable* symbolTable = NULL;
-struct ConstantTable* constantTable = NULL;
 int line = 1;
 
 %}
@@ -235,7 +71,8 @@ return              "return"
 
 assignment          =
 assignment_operator	"*="|"/="|"%="|"+="|"-="|"<<="|">>="|"&="|"|="|"^="
-shift_op            "<<"|">>"
+shift_op_l          "<<"
+shift_op_r          ">>"
 comp_op             "<"|">"|"<="|">="
 equality_op         "=="|"!="
 and_op              "&&"
@@ -264,7 +101,8 @@ or_op               "||"
 
 {assignment}        return yytext[0];
 {assignment_operator} return ASSIGNMENT;
-{shift_op}          return SHIFT_OP;
+{shift_op_l}        return SHIFT_OP_L;
+{shift_op_l}        return SHIFT_OP_R;
 {comp_op}           return COMP_OP;
 {equality_op}       return EQUALITY_OP;
 {and_op}            return AND_OP;
