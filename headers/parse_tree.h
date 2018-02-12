@@ -1,14 +1,17 @@
 #ifndef _PARSE_TREE_H_
 #define _PARSE_TREE_H_
 
+#define step 4
+
 // parse tree
-enum treetype {operator_node, number_node, variable_node};
+enum treetype {operator_node, number_node, double_node, variable_node};
 typedef struct tree {
    enum treetype nodetype;
    union {
      struct {struct tree *left, *right; char* operator;} an_operator;
      int a_number;
      char* a_variable;
+     double a_double;
    } body;
 } tree;
 
@@ -35,8 +38,14 @@ static tree *make_variable (char* v) {
    return result;
 }
 
+static tree *make_double (double v) {
+   tree *result= (tree*) malloc (sizeof(tree));
+   result->nodetype= double_node;
+   result->body.a_double= v;
+   return result;
+}
+
 static void printtree (tree *t, int level) {
-#define step 4
    if (t)
      switch (t->nodetype)
      {
@@ -50,6 +59,10 @@ static void printtree (tree *t, int level) {
         break;
        case variable_node:
         printf ("%*c%s\n", level, ' ', t->body.a_variable);
+        break;
+       case double_node:
+        printf ("%*c%lf\n", level, ' ', t->body.a_double);
+        break;
      }
 }
 

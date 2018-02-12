@@ -47,7 +47,6 @@ string_constant		\".*\"
 constant            {integer}|{unsigned_integer}|{signed_integer}|{positive_integer}|{double}|{unsigned_double}|{signed_double}|{char_constant}|{string_constant}
 
 operator			(\+|\-|\*|\/|\%)
-inc_dec_op          (\+\+|\-\-)
 relational_operator	(\<|\<=|\>|\>=|==|!=)
 logical_operator 	(&&|\|\||!)
 bitwise_operator	(&|\||\^|~|\<\<|\>\>)
@@ -73,10 +72,16 @@ assignment          =
 assignment_operator	"*="|"/="|"%="|"+="|"-="|"<<="|">>="|"&="|"|="|"^="
 shift_op_l          "<<"
 shift_op_r          ">>"
-comp_op             "<"|">"|"<="|">="
-equality_op         "=="|"!="
+lt_comp             "<"
+gt_comp             ">"
+lte_comp            "<="
+gte_comp            ">="
+equality_op         "=="
+not_equality_op     "!="
 and_op              "&&"
 or_op               "||"
+inc_op              "++"
+dec_op              "--"
 
 %%
 [\n]                line++;
@@ -103,10 +108,16 @@ or_op               "||"
 {assignment_operator} return ASSIGNMENT;
 {shift_op_l}        return SHIFT_OP_L;
 {shift_op_l}        return SHIFT_OP_R;
-{comp_op}           return COMP_OP;
+{lt_comp}           return LT_COMP;
+{gt_comp}           return GT_COMP;
+{lte_comp}          return LTE_COMP;
+{gte_comp}          return GTE_COMP;
 {equality_op}       return EQUALITY_OP;
+{not_equality_op}   return NOT_EQUALITY_OP;
 {and_op}            return AND_OP;
 {or_op}             return OR_OP;
+{inc_op}            return INC_OP;
+{dec_op}            return DEC_OP;
 
 {start_block}		return yytext[0];
 {end_block}			return yytext[0];
@@ -149,7 +160,7 @@ or_op               "||"
 {char_constant}	    {
     printf("char_constant : %s\n", yytext); \
     addConstant(constantTable, yytext); 
-    yylval.cval = yytext[0];
+    yylval.sval = copy(yytext);
     return CHAR;
 }
 
@@ -158,7 +169,6 @@ or_op               "||"
 {multi_comment}		printf("multi_comment : %s\n", yytext);
 
 {operator}			{printf("operator : %s\n", yytext); return yytext[0];}
-{inc_dec_op}		{printf("operator : %s\n", yytext); return INC_DEC_OP;}
 {relational_operator} {printf("reltional_operator : %s\n", yytext); return yytext[0];}
 {logical_operator}	{printf("logical_operator : %s\n", yytext); return yytext[0];}
 {bitwise_operator}	{printf("bitwise_operator : %s\n", yytext); return yytext[0];}

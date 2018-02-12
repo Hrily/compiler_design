@@ -1,5 +1,5 @@
 int main() {
     int a, b, c;
-    a = 2+3*3/4-3;
+    a = 2*b+'h'*3.0;
     b = a * c + a - (c + b);
 }

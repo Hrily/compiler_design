@@ -15,6 +15,7 @@ struct SymbolTable* symbolTable = NULL;
 struct ConstantTable* constantTable = NULL;
 
 char* current_datatype;
+int flag = 0;
 
 %}
 
@@ -30,10 +31,10 @@ char* current_datatype;
 %token <sval> ID
 %token <ival> INT
 %token <dval> DOUBLE
-%token <cval> CHAR
+%token <sval> CHAR
 %token <sval> STRING
 %token <dt>   DATATYPE
-%token INC_DEC_OP ASSIGNMENT SHIFT_OP_L SHIFT_OP_R COMP_OP EQUALITY_OP AND_OP OR_OP
+%token INC_OP DEC_OP ASSIGNMENT SHIFT_OP_L SHIFT_OP_R LT_COMP GT_COMP LTE_COMP GTE_COMP EQUALITY_OP NOT_EQUALITY_OP AND_OP OR_OP
 %token CASE DEFAULT IF ELSE SWITCH WHILE DO FOR GOTO CONTINUE BREAK RETURN
 
 %type <a_tree> conditional_expression additive_expression multiplicative_expression logical_or_expression shift_expression relational_expression logical_and_expression equality_expression and_expression exclusive_or_expression inclusive_or_expression cast_expression unary_expression primary_expression expression postfix_expression assignment_expression
@@ -184,9 +185,9 @@ jump_statement
 primary_expression
 	: ID {$$ = make_variable($1);}
 	| INT {$$ = make_number($1);}
-    | DOUBLE {$$ = make_number($1);}
+    | DOUBLE {$$ = make_double($1);}
 	| STRING {$$ = make_variable($1);}
-	| CHAR {$$ = make_number($1);}
+	| CHAR {$$ = make_variable($1);}
 	| '(' expression ')' {$$ = $2;}
 	;
 
@@ -225,7 +226,8 @@ postfix_expression
 	| postfix_expression '(' ')' {$$ = $1;}
 	| postfix_expression '(' argument_expression_list ')' {$$ = $1;}
 	| postfix_expression '.' ID {$$ = $1;}
-	| postfix_expression INC_DEC_OP {$$ = $1;}
+	| postfix_expression INC_OP {$$ = make_operator($1, "++", NULL);}
+	| postfix_expression DEC_OP {$$ = make_operator($1, "--", NULL);}
     ;
 
 argument_expression_list
@@ -235,7 +237,8 @@ argument_expression_list
 
 unary_expression
 	: postfix_expression {$$ = $1;}
-	| INC_DEC_OP unary_expression {$$ = $2;}
+	| INC_OP unary_expression {$$ = make_operator(NULL, "++", $2);}
+	| DEC_OP unary_expression {$$ = make_operator(NULL, "--", $2);}
 	| unary_operator cast_expression {$$ = $2;}
 	| "sizeof" unary_expression {$$ = $2;}
 	| "sizeof" '(' DATATYPE ')' {$$ = make_variable($3);}
@@ -277,12 +280,16 @@ shift_expression
 
 relational_expression
 	: shift_expression {$$ = $1;}
-	| relational_expression COMP_OP shift_expression {$$ = make_operator($1, "comp", $3);}
+	| relational_expression LT_COMP shift_expression {$$ = make_operator($1, "<", $3);}
+	| relational_expression GT_COMP shift_expression {$$ = make_operator($1, ">", $3);}
+	| relational_expression LTE_COMP shift_expression {$$ = make_operator($1, "<=", $3);}
+	| relational_expression GTE_COMP shift_expression {$$ = make_operator($1, ">=", $3);}
 	;
 
 equality_expression
 	: relational_expression {$$ = $1;}
-	| equality_expression EQUALITY_OP relational_expression {$$ = make_operator($1, "==/!=", $3);}
+	| equality_expression EQUALITY_OP relational_expression {$$ = make_operator($1, "==", $3);}
+	| equality_expression NOT_EQUALITY_OP relational_expression {$$ = make_operator($1, "!=", $3);}
 	;
 
 and_expression
@@ -313,7 +320,9 @@ logical_or_expression
 %%
 
 void yyerror (char *s) {
-	printf("Error at line %d: %s!\n", line, s);
+    flag = 1;
+    printf("Error at line %d: %s!\n", line, s);
+    printf("Compilation Failed!\n");
 }
 
 int main (int argc, char* argv[]) {
@@ -323,12 +332,21 @@ int main (int argc, char* argv[]) {
         return 1;
     }
 
-	yyin = fopen(argv[1], "r");
-	symbolTable = initSymbolTable();
-	constantTable = initConstantTable();
-	yyparse();
-	
+    yyin = fopen(argv[1], "r");
 
+    if (!yyin) {
+	printf("File doesn't exist\n");
+	return 1;
+    }
+
+    symbolTable = initSymbolTable();
+    constantTable = initConstantTable();
+    yyparse();
+    
+    if (!flag){
 	printSymbols(symbolTable);
 	printConstants(constantTable);
+	printf("Program is syntactically correct.\n");
+    }
+	
 }
