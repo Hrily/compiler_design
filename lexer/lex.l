@@ -5,7 +5,7 @@
 extern struct SymbolTable* symbolTable;
 extern struct ConstantTable* constantTable;
 extern void addSymbol(struct SymbolTable*, char*);
-extern void addConstant(struct ConstantTable*, char*);
+extern void addConstant(struct ConstantTable*, char*, char*);
 extern char* copy(char*);
 
 int line = 1;
@@ -140,26 +140,26 @@ dec_op              "--"
 {nondouble}			printf("Illegal double constant : %s\n", yytext);
 {double}			{
     printf("double : %s\n", yytext); 
-    addConstant(constantTable, yytext); 
+    addConstant(constantTable, yytext, "double"); 
     yylval.dval = atoi(yytext);
     return DOUBLE;
 }
 {integer}			{
     printf("integer : %s\n", yytext); 
-    addConstant(constantTable, yytext); 
+    addConstant(constantTable, yytext, "int"); 
     yylval.ival = atoi(yytext);
     return INT;
 }
 
 {string_constant}	{
     printf("string_constant : %s\n", yytext); 
-    addConstant(constantTable, yytext); 
+    addConstant(constantTable, yytext, "string"); 
     yylval.sval = copy(yytext);
     return STRING;
 }
 {char_constant}	    {
-    printf("char_constant : %s\n", yytext); \
-    addConstant(constantTable, yytext); 
+    printf("char_constant : %s\n", yytext); 
+    addConstant(constantTable, yytext, "char"); 
     yylval.sval = copy(yytext);
     return CHAR;
 }

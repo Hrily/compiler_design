@@ -79,6 +79,7 @@ declarator
 
 declaration 
     : datatype init_list ';'
+    | error {}
     ;
 
 declaration_list
@@ -322,7 +323,6 @@ logical_or_expression
 void yyerror (char *s) {
     flag = 1;
     printf("Error at line %d: %s!\n", line, s);
-    printf("Compilation Failed!\n");
 }
 
 int main (int argc, char* argv[]) {
@@ -347,6 +347,8 @@ int main (int argc, char* argv[]) {
 	printSymbols(symbolTable);
 	printConstants(constantTable);
 	printf("Program is syntactically correct.\n");
+    } else {
+	printf("Compilation Failed!\n");
     }
 	
 }

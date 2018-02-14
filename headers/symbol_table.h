@@ -147,7 +147,7 @@ int hasConstant (struct ConstantTable* constantTable, char* text)
     return 0;
 }
 
-void addConstant (struct ConstantTable* constantTable, char* text)
+void addConstant (struct ConstantTable* constantTable, char* text, char* type)
 {
     if (hasConstant(constantTable, text))
         return;
@@ -155,6 +155,8 @@ void addConstant (struct ConstantTable* constantTable, char* text)
             malloc(sizeof(struct Constant));
     constant->text = (char*) malloc(strlen(text)) + 1;
     strcpy(constant->text, text);
+    constant->type = (char*) malloc(strlen(type)) + 1;
+    strcpy(constant->type, type);
     array_push(constantTable->constants, constant);
 }
 
@@ -165,7 +167,7 @@ void printConstants (struct ConstantTable* constantTable) {
     printf("*** Constant Table ***\n");
     printf("=================START=================\n");
     for (int i=0; i<constantTable->constants.length; i++) {
-        printf(" %s\n", constantTable->constants.data[i]->text);
+        printf(" %s\t%s\n", constantTable->constants.data[i]->type, constantTable->constants.data[i]->text);
     }
     printf("==================END==================\n");
 }
