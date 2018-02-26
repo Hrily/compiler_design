@@ -68,8 +68,7 @@ continue            "continue"
 break               "break"
 return              "return"
 
-assignment          =
-assignment_operator	"*="|"/="|"%="|"+="|"-="|"<<="|">>="|"&="|"|="|"^="
+assignment_operator	"="|"*="|"/="|"%="|"+="|"-="|"<<="|">>="|"&="|"|="|"^="
 shift_op_l          "<<"
 shift_op_r          ">>"
 lt_comp             "<"
@@ -104,8 +103,10 @@ dec_op              "--"
 {break}             return BREAK;
 {return}            return RETURN;
 
-{assignment}        return yytext[0];
-{assignment_operator} return ASSIGNMENT;
+{assignment_operator} {
+    yylval.sval = copy(yytext);
+    return ASSIGNMENT;
+}
 {shift_op_l}        return SHIFT_OP_L;
 {shift_op_l}        return SHIFT_OP_R;
 {lt_comp}           return LT_COMP;
@@ -129,8 +130,7 @@ dec_op              "--"
 }
 {keyword}      		{printf("keyword : %s\n", yytext);}
 {identifier}		{
-    addSymbol(symbolTable, yytext);
-	printf("identifier : %s\n", yytext);
+    printf("identifier : %s\n", yytext);
     yylval.sval = copy(yytext);
     return ID;
 };

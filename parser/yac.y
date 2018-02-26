@@ -17,14 +17,42 @@ struct ConstantTable* constantTable = NULL;
 char* current_datatype;
 int flag = 0;
 
+// Scope
+int scopes[1000];
+int scopesLength = 1;
+int scopeCounter = 1;
+
+int getCurrentScope () 
+{
+    return scopes[scopesLength - 1];
+}
+
+void startNewScope () 
+{
+   scopes[scopesLength++] = scopeCounter++;
+}
+
+void endCurrentScope () 
+{
+    scopesLength--;
+}
+
+int isScopeValid (int scope)
+{
+   for (int i = scopesLength-1; i>=0; i--)
+      if (scopes[i] == scope)
+	 return 1;
+   return 0;
+}
+
 %}
 
 %union {
-	int ival;
+	int    ival;
 	double dval;
-	char cval;
-	char *sval;
-	char* dt;
+	char   cval;
+	char*  sval;
+	char*  dt;
 	struct tree* a_tree;
 }
 
@@ -34,10 +62,12 @@ int flag = 0;
 %token <sval> CHAR
 %token <sval> STRING
 %token <dt>   DATATYPE
-%token INC_OP DEC_OP ASSIGNMENT SHIFT_OP_L SHIFT_OP_R LT_COMP GT_COMP LTE_COMP GTE_COMP EQUALITY_OP NOT_EQUALITY_OP AND_OP OR_OP
+%token <sval> ASSIGNMENT
+%token INC_OP DEC_OP SHIFT_OP_L SHIFT_OP_R LT_COMP GT_COMP LTE_COMP GTE_COMP EQUALITY_OP NOT_EQUALITY_OP AND_OP OR_OP
 %token CASE DEFAULT IF ELSE SWITCH WHILE DO FOR GOTO CONTINUE BREAK RETURN
 
-%type <a_tree> conditional_expression additive_expression multiplicative_expression logical_or_expression shift_expression relational_expression logical_and_expression equality_expression and_expression exclusive_or_expression inclusive_or_expression cast_expression unary_expression primary_expression expression postfix_expression assignment_expression
+%type <a_tree> conditional_expression additive_expression multiplicative_expression logical_or_expression shift_expression relational_expression logical_and_expression equality_expression and_expression exclusive_or_expression inclusive_or_expression cast_expression unary_expression primary_expression expression postfix_expression assignment_expression init declarator
+%type <sval> assignment_operator 
 
 %start translation_unit
 
@@ -68,13 +98,15 @@ function_definition
 
 declarator
     : ID {
-	addType(symbolTable, $1, current_datatype);
+	addSymbol(symbolTable, $1, getCurrentScope());
+	addType(symbolTable, $1, current_datatype, getCurrentScope());
+	$$ = make_variable($1);
     }
-    | declarator '[' constant_expression ']'
-    | declarator '[' ']'
-    | declarator '(' parameter_list ')'
-    | declarator '(' id_list ')'
-    | declarator '(' ')'
+    | declarator '[' constant_expression ']' {$$ = $1;}
+    | declarator '[' ']' {$$ = $1;}
+    | declarator '(' parameter_list ')' {$$ = $1;}
+    | declarator '(' id_list ')' {$$ = $1;}
+    | declarator '(' ')' {$$ = $1;}
     ;
 
 declaration 
@@ -93,23 +125,14 @@ init_list
     ;
 
 init 
-    : declarator
-    | declarator '=' initializer
-    ;
-
-initializer
-    : assignment_expression
-    | '{' initializer_list '}'
-    ;
-
-initializer_list
-    : initializer initializer_list_tail
-    ;
-
-initializer_list_tail
-    : 
-    | ',' 
-    | ',' initializer_list
+    : declarator {$$ = $1;}
+    | declarator ASSIGNMENT assignment_expression {
+	 $$ = make_operator($1, $2, $3);
+	 printf("*** Parse Tree ***\n");
+	 printtree($$, 1);
+	 printf("***\n");
+	 printf("\n");
+    }
     ;
 
 parameter_list
@@ -142,8 +165,21 @@ statement
     | jump_statement
     ;
 
+
+block_start
+   : '{' {
+      startNewScope();
+   }
+   ;
+
+block_end
+   : '}' {
+      endCurrentScope();
+   }
+   ;
+
 compound_statement
-    : '{' statement_list '}'
+    : block_start statement_list block_end
     ;
 
 statement_list
@@ -162,17 +198,50 @@ expression_statement
     | expression ';'
     ;
 
+bracket_begin_scope
+   : ')' {
+      startNewScope();
+   }
+   ;
+
 selection_statement
-    : IF '(' expression ')' statement                %prec "then"
-    | IF '(' expression ')' statement ELSE statement
-    | SWITCH '(' expression ')' statement
+    : IF '(' expression bracket_begin_scope statement                %prec "then"
+      {
+	 endCurrentScope();
+      }
+    | IF '(' expression bracket_begin_scope statement ELSE statement
+      {
+	 endCurrentScope();
+      }
+    | SWITCH '(' expression bracket_begin_scope statement
+      {
+	 endCurrentScope();
+      }
     ;
 
+do 
+   : DO {
+      startNewScope();
+   }
+   ;
+
 iteration_statement
-	: WHILE '(' expression ')' statement
-	| DO statement WHILE '(' expression ')' ';'
-	| FOR '(' expression_statement expression_statement ')' statement
-	| FOR '(' expression_statement expression_statement expression ')' statement
+	: WHILE '(' expression bracket_begin_scope statement
+	  {
+	    endCurrentScope();
+	  }
+	| do statement WHILE '(' expression ')' ';'
+	  {
+	    endCurrentScope();
+	  }
+	| FOR '(' expression_statement expression_statement bracket_begin_scope statement
+	  {
+	    endCurrentScope();
+	  }
+	| FOR '(' expression_statement expression_statement expression bracket_begin_scope statement
+	  {
+	    endCurrentScope();
+	  }
 	;
 
 jump_statement
@@ -193,26 +262,29 @@ primary_expression
 	;
 
 expression
-    : assignment_expression {$$ = $1;}
+    : assignment_expression {
+	 $$ = $1;
+	 printf("*** Parse Tree ***\n");
+	 printtree($1, 1);
+	 printf("***\n");
+	 printf("\n");
+    }
     | expression ',' assignment_expression {$$ = $3;}
     ;
 
 assignment_expression
 	: conditional_expression {$$ = $1;}
-	| unary_expression assignment_operator assignment_expression {$$ = $3;}
+	| unary_expression assignment_operator assignment_expression {
+	    $$ = make_operator($1, $2, $3);
+        }
 	;
 
 assignment_operator
-    : '='
-    | ASSIGNMENT
+    : ASSIGNMENT
     ;
 
 conditional_expression
 	: logical_or_expression {
-	    printf("*** Parse Tree ***\n");
-	    printtree($1, 1);
-	    printf("***\n");
-	    printf("\n");
 	 }
 	| logical_or_expression '?' expression ':' conditional_expression
 	;
@@ -341,6 +413,7 @@ int main (int argc, char* argv[]) {
 
     symbolTable = initSymbolTable();
     constantTable = initConstantTable();
+    scopes[0] = 0; // Global
     yyparse();
     
     if (!flag){

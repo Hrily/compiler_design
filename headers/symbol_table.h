@@ -54,6 +54,7 @@ struct Symbol
 {
     char* name;
     char* type;
+    int   scope;
 };
 
 struct SymbolTable 
@@ -69,38 +70,62 @@ struct SymbolTable* initSymbolTable ()
     return symbolTable;
 }
 
-int hasSymbol (struct SymbolTable* symbolTable, char* name)
+int hasSymbol (struct SymbolTable* symbolTable, char* name, int scope)
 {
-    for (int i=0; i<symbolTable->symbols.length; i++) {
-        if (strcmp(symbolTable->symbols.data[i]->name, name) == 0)
+    if (scope < 0) 
+    {
+        for (int i=0; i<symbolTable->symbols.length; i++) 
+        {
+            if (strcmp(symbolTable->symbols.data[i]->name, name) == 0)
+                return 1;
+        }
+        return 0;
+    }
+    for (int i=0; i<symbolTable->symbols.length; i++) 
+    {
+        if (strcmp(symbolTable->symbols.data[i]->name, name) == 0
+              && symbolTable->symbols.data[i]->scope == scope)
             return 1;
     }
     return 0;
 }
 
-void addSymbol (struct SymbolTable* symbolTable, char* name)
+void addSymbol (struct SymbolTable* symbolTable, char* name, int scope)
 {
-    if (hasSymbol(symbolTable, name))
+    if (hasSymbol(symbolTable, name, scope))
         return;
     struct Symbol *symbol = (struct Symbol*)
-            malloc(sizeof(struct Symbol));
+        malloc(sizeof(struct Symbol));
     symbol->name = (char*) malloc(strlen(name)) + 1;
+    symbol->scope = scope;
     strcpy(symbol->name, name);
     array_push(symbolTable->symbols, symbol);
 }
 
 struct Symbol* findSymbol (struct SymbolTable* symbolTable, 
-        char* name) {
-    for (int i=0; i<symbolTable->symbols.length; i++) {
-        if (strcmp(symbolTable->symbols.data[i]->name, name) == 0)
+        char* name, int scope) 
+{
+    if (scope < 0) 
+    {
+        for (int i=0; i<symbolTable->symbols.length; i++) 
+        {
+            if (strcmp(symbolTable->symbols.data[i]->name, name) == 0)
+                return symbolTable->symbols.data[i];
+        }
+        return NULL;
+    }
+    for (int i=0; i<symbolTable->symbols.length; i++) 
+    {
+        if (strcmp(symbolTable->symbols.data[i]->name, name) == 0
+              && symbolTable->symbols.data[i]->scope == scope)
             return symbolTable->symbols.data[i];
     }
     return NULL;
 }
 
-void addType (struct SymbolTable* symbolTable, char* name, char* type) 
+void addType (struct SymbolTable* symbolTable, char* name, char* type, int scope)
 {
-	struct Symbol* symbol = findSymbol(symbolTable, name);
+	struct Symbol* symbol = findSymbol(symbolTable, name, scope);
 	if (symbol->type != NULL)
 		yyerror("Redeclaration error");
 	else
@@ -114,7 +139,10 @@ void printSymbols (struct SymbolTable *symbolTable) {
     printf("*** Symbol Table ***\n");
     printf("=================START=================\n");
     for (int i=0; i<symbolTable->symbols.length; i++) {
-        printf("%s\t%s\n", symbolTable->symbols.data[i]->type, symbolTable->symbols.data[i]->name);
+        printf("%s\t%s\t%d\n", 
+            symbolTable->symbols.data[i]->type, 
+            symbolTable->symbols.data[i]->name, 
+            symbolTable->symbols.data[i]->scope);
     }
     printf("==================END==================\n");
 }
