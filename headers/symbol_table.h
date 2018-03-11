@@ -98,6 +98,7 @@ void addSymbol (struct SymbolTable* symbolTable, char* name, int scope)
         malloc(sizeof(struct Symbol));
     symbol->name = (char*) malloc(strlen(name)) + 1;
     symbol->scope = scope;
+    symbol->type = NULL;
     strcpy(symbol->name, name);
     array_push(symbolTable->symbols, symbol);
 }

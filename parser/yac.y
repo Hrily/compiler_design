@@ -7,43 +7,16 @@
 #include <string.h>
 #include "headers/symbol_table.h"
 #include "headers/parse_tree.h"
+#include "headers/semantic.h"
 
-extern FILE*   yyin;
-extern int line;
+extern FILE* yyin;
+extern int   line;
 
 struct SymbolTable* symbolTable = NULL;
 struct ConstantTable* constantTable = NULL;
 
 char* current_datatype;
 int flag = 0;
-
-// Scope
-int scopes[1000];
-int scopesLength = 1;
-int scopeCounter = 1;
-
-int getCurrentScope () 
-{
-    return scopes[scopesLength - 1];
-}
-
-void startNewScope () 
-{
-   scopes[scopesLength++] = scopeCounter++;
-}
-
-void endCurrentScope () 
-{
-    scopesLength--;
-}
-
-int isScopeValid (int scope)
-{
-   for (int i = scopesLength-1; i>=0; i--)
-      if (scopes[i] == scope)
-	 return 1;
-   return 0;
-}
 
 %}
 
@@ -127,11 +100,13 @@ init_list
 init 
     : declarator {$$ = $1;}
     | declarator ASSIGNMENT assignment_expression {
-	 $$ = make_operator($1, $2, $3);
-	 printf("*** Parse Tree ***\n");
-	 printtree($$, 1);
-	 printf("***\n");
-	 printf("\n");
+		$$ = make_operator($1, $2, $3);
+		printf("*** Parse Tree ***\n");
+		printtree($$, 1);
+		printf("***\n");
+		printf("\n");
+		if (!checkType($$, getCurrentScope())) 
+			yyerror("Operation performed on inconsistent datatypes\n");
     }
     ;
 
@@ -256,18 +231,20 @@ primary_expression
 	: ID {$$ = make_variable($1);}
 	| INT {$$ = make_number($1);}
     | DOUBLE {$$ = make_double($1);}
-	| STRING {$$ = make_variable($1);}
-	| CHAR {$$ = make_variable($1);}
+	| STRING {$$ = make_string($1);}
+	| CHAR {$$ = make_char($1);}
 	| '(' expression ')' {$$ = $2;}
 	;
 
 expression
     : assignment_expression {
-	 $$ = $1;
-	 printf("*** Parse Tree ***\n");
-	 printtree($1, 1);
-	 printf("***\n");
-	 printf("\n");
+		$$ = $1;
+		printf("*** Parse Tree ***\n");
+		printtree($1, 1);
+		printf("***\n");
+		printf("\n");
+		if (!checkType($$, getCurrentScope())) 
+			yyerror("Operation performed on inconsistent datatypes\n");	
     }
     | expression ',' assignment_expression {$$ = $3;}
     ;
@@ -417,11 +394,11 @@ int main (int argc, char* argv[]) {
     yyparse();
     
     if (!flag){
-	printSymbols(symbolTable);
-	printConstants(constantTable);
-	printf("Program is syntactically correct.\n");
+		printSymbols(symbolTable);
+		printConstants(constantTable);
+		printf("Program is syntactically correct.\n");
     } else {
-	printf("Compilation Failed!\n");
+		printf("Compilation Failed!\n");
     }
 	
 }
