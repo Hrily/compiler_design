@@ -55,7 +55,18 @@ struct Symbol
     char* name;
     char* type;
     int   scope;
+    array(int) paramTypes;
 };
+
+void initParamTypes (struct Symbol* symbol)
+{
+    symbol->paramTypes = (typeof(symbol->paramTypes)) array_init();
+}
+
+void addParamType (struct Symbol* symbol, int type)
+{
+    array_push(symbol->paramTypes, type);
+}
 
 struct SymbolTable 
 {
@@ -137,13 +148,18 @@ void printSymbols (struct SymbolTable *symbolTable) {
     // Print current block
     if (symbolTable->symbols.length <= 0) 
         return;
+    char* types[6] = {"", "int", "double", "char", "char*", "void"};
     printf("*** Symbol Table ***\n");
     printf("=================START=================\n");
     for (int i=0; i<symbolTable->symbols.length; i++) {
-        printf("%s\t%s\t%d\n", 
-            symbolTable->symbols.data[i]->type, 
-            symbolTable->symbols.data[i]->name, 
-            symbolTable->symbols.data[i]->scope);
+        struct Symbol* symbol = symbolTable->symbols.data[i];
+        printf("%s\t%s\t%d\t", 
+            symbol->type, 
+            symbol->name, 
+            symbol->scope);
+        for(int i=0; i<symbol->paramTypes.length; i++)
+            printf("%s, ", types[symbol->paramTypes.data[i]]);
+        printf("\n");
     }
     printf("==================END==================\n");
 }

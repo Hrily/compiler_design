@@ -74,6 +74,10 @@ function_declarator_bracket
    : ID '(' {
       startNewScope();
       dontCreateNewScope = 1;
+      addSymbol(symbolTable, $1, getCurrentScope());
+      addType(symbolTable, $1, current_datatype, getCurrentScope());
+      current_symbol = findSymbol(symbolTable, $1, getCurrentScope());
+      initParamTypes(current_symbol);
    }
    ;
 
