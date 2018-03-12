@@ -17,7 +17,9 @@ struct ConstantTable* constantTable = NULL;
 
 char* current_datatype;
 char* current_function_datatype;
+struct Symbol* current_symbol;
 int flag = 0;
+int dontCreateNewScope = 0;
 
 %}
 
@@ -68,8 +70,15 @@ datatype
     }
     ;
 
+function_declarator_bracket
+   : ID '(' {
+      startNewScope();
+      dontCreateNewScope = 1;
+   }
+   ;
+
 function_declarator
-   : declarator {
+   : function_declarator_bracket parameter_list ')' {
       current_function_datatype = copy(current_datatype);
    }
    ;
@@ -130,8 +139,13 @@ parameter_list_tail
     ;
 
 parameter_declaration
-    : DATATYPE declarator
-    | DATATYPE
+    :
+    | datatype declarator {
+	 addParamType(current_symbol, getTypeConstant($1));
+    }
+    | DATATYPE {
+	 addParamType(current_symbol, getTypeConstant($1));
+    }
     ;
 
 id_list
@@ -152,13 +166,17 @@ statement
 
 block_start
    : '{' {
-      startNewScope();
+      if (!dontCreateNewScope)
+	 startNewScope();
+      else
+	 dontCreateNewScope = 0;
    }
    ;
 
 block_end
    : '}' {
-      endCurrentScope();
+      if (!dontCreateNewScope)
+	 endCurrentScope();
    }
    ;
 
