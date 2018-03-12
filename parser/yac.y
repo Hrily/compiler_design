@@ -16,6 +16,7 @@ struct SymbolTable* symbolTable = NULL;
 struct ConstantTable* constantTable = NULL;
 
 char* current_datatype;
+char* current_function_datatype;
 int flag = 0;
 
 %}
@@ -40,7 +41,8 @@ int flag = 0;
 %token CASE DEFAULT IF ELSE SWITCH WHILE DO FOR GOTO CONTINUE BREAK RETURN
 
 %type <a_tree> conditional_expression additive_expression multiplicative_expression logical_or_expression shift_expression relational_expression logical_and_expression equality_expression and_expression exclusive_or_expression inclusive_or_expression cast_expression unary_expression primary_expression expression postfix_expression assignment_expression init declarator
-%type <sval> assignment_operator 
+%type <sval> assignment_operator
+%type <dt>   datatype
 
 %start translation_unit
 
@@ -61,12 +63,19 @@ global_declaration
 
 datatype
     : DATATYPE {
+        $$ = $1;
 	current_datatype = copy($1);
     }
     ;
 
+function_declarator
+   : declarator {
+      current_function_datatype = copy(current_datatype);
+   }
+   ;
+
 function_definition
-    : datatype declarator compound_statement
+    : datatype function_declarator compound_statement
     ;
 
 declarator
@@ -219,12 +228,24 @@ iteration_statement
 	  }
 	;
 
+return_expression 
+   : expression {
+      int expression_type = checkAndGetTypes($1, getCurrentScope());
+      int return_type = getTypeConstant(current_function_datatype);
+      if (expression_type != -1 && (
+	    (expression_type == TYPE_STRING && return_type != TYPE_STRING) ||
+	    (expression_type != TYPE_STRING && return_type == TYPE_STRING) ) )
+
+	 yyerror("Return type not matching function definition\n");
+   }
+   ;
+
 jump_statement
 	: GOTO ID ';'
 	| CONTINUE ';'
 	| BREAK ';'
 	| RETURN ';'
-	| RETURN expression ';'
+	| RETURN return_expression ';'
 	;
 
 primary_expression
@@ -371,7 +392,7 @@ logical_or_expression
 
 void yyerror (char *s) {
     flag = 1;
-    printf("Error at line %d: %s!\n", line, s);
+    printf("Error at line %d: %s\n", line, s);
 }
 
 int main (int argc, char* argv[]) {

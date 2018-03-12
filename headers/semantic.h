@@ -60,6 +60,22 @@ int equal (char* s, char* t)
     return strcmp(s, t) == 0;
 }
 
+int getTypeConstant (char* type) 
+{
+   if (equal(type, "int"))
+       return TYPE_INT;
+   if (equal(type, "double"))
+       return TYPE_DOUBLE;
+   if (equal(type, "char"))
+       return TYPE_CHAR;
+   if (equal(type, "string"))
+       return TYPE_STRING;
+       return TYPE_CHAR;
+   if (equal(type, "void"))
+       return TYPE_VOID;
+}
+
+
 int checkAndGetTypes (struct tree* parseTree, int scope)
 {
     if (parseTree == NULL)
@@ -82,8 +98,8 @@ int checkAndGetTypes (struct tree* parseTree, int scope)
                 return TYPE_STRING;
             if (leftType != TYPE_STRING && rightType != TYPE_STRING)
                 return leftType;
-        }
             return -1;
+        }
         case number_node:
             return TYPE_INT;
         case char_node:
@@ -94,17 +110,7 @@ int checkAndGetTypes (struct tree* parseTree, int scope)
             return TYPE_DOUBLE;
         case variable_node: {
             char* type = getType(parseTree->body.a_variable, scope);
-            if (equal(type, "int"))
-                return TYPE_INT;
-            if (equal(type, "double"))
-                return TYPE_DOUBLE;
-            if (equal(type, "char"))
-                return TYPE_CHAR;
-            if (equal(type, "string"))
-                return TYPE_STRING;
-                return TYPE_CHAR;
-            if (equal(type, "void"))
-                return TYPE_VOID;
+            return getTypeConstant(type);
         }
     }
 }
