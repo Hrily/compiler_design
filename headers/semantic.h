@@ -19,6 +19,9 @@ int scopes[1000];
 int scopesLength = 1;
 int scopeCounter = 1;
 
+char* current_function_call;
+array(int) current_function_param_types;
+
 int getCurrentScope () 
 {
     return scopes[scopesLength - 1];
@@ -133,6 +136,47 @@ void setDimension (struct tree* idNode, int dimension)
     struct Symbol* symbol = getSymbolInScope(name);
     if (symbol && symbol->dimension == 0)
         symbol->dimension = dimension;
+}
+
+void setCurrentFunctionCall (char* name)
+{
+    current_function_call = copy(name);
+    current_function_param_types = 
+        (typeof(current_function_param_types)) array_init();
+}
+
+void addCurrentFunctionParamType (int type)
+{
+    array_push(current_function_param_types, type);
+}
+
+void checkCurrentFunctionCallTypes ()
+{
+    struct Symbol* symbol = getSymbolInScope(current_function_call);
+    if (symbol == NULL)
+    {
+        // TODO: add function with pdf=false
+        return;
+    }
+    int original_length = symbol->paramTypes.length;
+    int new_lenght = current_function_param_types.length;
+
+    if (original_length != new_lenght)
+    {
+        printCurrentFunctionError(symbol);
+        return;
+    }
+    
+    for (int i = 0; i < original_length; i++)
+        if (current_function_param_types.data[i] != symbol->paramTypes.data[i])
+            printCurrentFunctionError(symbol);
+}
+
+void printCurrentFunctionError (struct Symbol* symbol)
+{
+    printf("No definition matches function call %s\n", symbol->name);
+    yyerror("Invalid function call");
+    // TODO: print more verbose error
 }
 
 #endif

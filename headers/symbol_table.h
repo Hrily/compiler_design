@@ -114,6 +114,7 @@ void addSymbol (struct SymbolTable* symbolTable, char* name, int scope)
     symbol->type = NULL;
     symbol->dimension = 0;
     symbol->pdf = -1;
+    initParamTypes(symbol);
     strcpy(symbol->name, name);
     array_push(symbolTable->symbols, symbol);
 }

@@ -72,12 +72,12 @@ datatype
 
 function_declarator_bracket
    : ID '(' {
-      startNewScope();
-      dontCreateNewScope = 1;
       addSymbol(symbolTable, $1, getCurrentScope());
       addType(symbolTable, $1, current_datatype, getCurrentScope());
       current_symbol = findSymbol(symbolTable, $1, getCurrentScope());
       initParamTypes(current_symbol);
+      startNewScope();
+      dontCreateNewScope = 1;
    }
    ;
 
@@ -99,9 +99,6 @@ declarator
     }
     | declarator '[' INT {setDimension($1, $3);} ']' {$$ = $1;}
     | declarator '[' ']' {$$ = $1;}
-    | declarator '(' parameter_list ')' {$$ = $1;}
-    | declarator '(' id_list ')' {$$ = $1;}
-    | declarator '(' ')' {$$ = $1;}
     ;
 
 declaration 
@@ -152,9 +149,20 @@ parameter_declaration
     }
     ;
 
-id_list
-    : ID
-    | ID ',' id_list
+function_call_params_item
+	: ID {
+		char* type = getType($1, getCurrentScope());
+		addCurrentFunctionParamType(getTypeConstant(type));
+	}
+	| INT    {addCurrentFunctionParamType(TYPE_INT);}
+	| DOUBLE {addCurrentFunctionParamType(TYPE_DOUBLE);}
+	| CHAR   {addCurrentFunctionParamType(TYPE_CHAR);}
+	| STRING {addCurrentFunctionParamType(TYPE_STRING);}
+	;
+
+function_call_params
+    : function_call_params_item
+    | function_call_params_item ',' function_call_params
     ;
 
 statement
@@ -271,11 +279,16 @@ jump_statement
 	;
 
 primary_expression
-	: ID {$$ = make_variable($1);}
+	: ID {
+		$$ = make_variable($1); 
+		setCurrentFunctionCall($1);
+	}
 	| INT {$$ = make_number($1);}
     | DOUBLE {$$ = make_double($1);}
 	| STRING {$$ = make_string($1);}
 	| CHAR {$$ = make_char($1);}
+    | primary_expression '(' function_call_params ')' {$$ = $1; checkCurrentFunctionCallTypes();}
+    | primary_expression '('         ')' {$$ = $1; checkCurrentFunctionCallTypes();}
 	| '(' expression ')' {$$ = $2;}
 	;
 
