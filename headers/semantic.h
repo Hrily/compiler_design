@@ -42,14 +42,22 @@ int isScopeValid (int scope)
    return 0;
 }
 
-char* getType (char* name, int scope)
+struct Symbol* getSymbolInScope (char* name)
 {
     for (int i = scopesLength - 1; i >= 0; i--)
     {
         struct Symbol* symbol = findSymbol(symbolTable, name, scopes[i]);
         if (symbol == NULL) continue;
-        return symbol->type;
+        return symbol;
     }
+    return NULL;
+}
+
+char* getType (char* name, int scope)
+{
+    struct Symbol* symbol = getSymbolInScope(name);
+    if (symbol)
+        return symbol->type;
     printf("Unknown identifier %s\n", name);
     yyerror("Unknown identifier\n");
     return NULL;
@@ -70,7 +78,6 @@ int getTypeConstant (char* type)
        return TYPE_CHAR;
    if (equal(type, "string"))
        return TYPE_STRING;
-       return TYPE_CHAR;
    if (equal(type, "void"))
        return TYPE_VOID;
 }
@@ -118,6 +125,14 @@ int checkAndGetTypes (struct tree* parseTree, int scope)
 int checkType (struct tree* parseTree, int scope)
 {
     return checkAndGetTypes(parseTree, scope) != -1;
+}
+
+void setDimension (struct tree* idNode, int dimension)
+{
+    char* name = idNode->body.a_variable;
+    struct Symbol* symbol = getSymbolInScope(name);
+    if (symbol && symbol->dimension == 0)
+        symbol->dimension = dimension;
 }
 
 #endif

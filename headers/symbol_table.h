@@ -55,6 +55,8 @@ struct Symbol
     char* name;
     char* type;
     int   scope;
+    int   dimension;
+    int   pdf;
     array(int) paramTypes;
 };
 
@@ -110,6 +112,8 @@ void addSymbol (struct SymbolTable* symbolTable, char* name, int scope)
     symbol->name = (char*) malloc(strlen(name)) + 1;
     symbol->scope = scope;
     symbol->type = NULL;
+    symbol->dimension = 0;
+    symbol->pdf = -1;
     strcpy(symbol->name, name);
     array_push(symbolTable->symbols, symbol);
 }
@@ -157,8 +161,12 @@ void printSymbols (struct SymbolTable *symbolTable) {
             symbol->type, 
             symbol->name, 
             symbol->scope);
-        for(int i=0; i<symbol->paramTypes.length; i++)
+        for (int i=0; i<symbol->paramTypes.length; i++)
             printf("%s, ", types[symbol->paramTypes.data[i]]);
+        if (symbol->dimension > 0)
+            printf("[%d]\t", symbol->dimension);
+        if (symbol->pdf > -1)
+            printf("%s\t", (symbol->pdf) ? "TRUE" : "FALSE");
         printf("\n");
     }
     printf("==================END==================\n");

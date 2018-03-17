@@ -1,7 +1,8 @@
 int a;
 int add(int a, int b) {
     {
-	int a;
+	int a[10];
+    int c = a[0];
     }
     return a + b;
 }

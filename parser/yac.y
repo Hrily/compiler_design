@@ -93,11 +93,11 @@ function_definition
 
 declarator
     : ID {
-	addSymbol(symbolTable, $1, getCurrentScope());
-	addType(symbolTable, $1, current_datatype, getCurrentScope());
-	$$ = make_variable($1);
+		addSymbol(symbolTable, $1, getCurrentScope());
+		addType(symbolTable, $1, current_datatype, getCurrentScope());
+		$$ = make_variable($1);
     }
-    | declarator '[' constant_expression ']' {$$ = $1;}
+    | declarator '[' INT {setDimension($1, $3);} ']' {$$ = $1;}
     | declarator '[' ']' {$$ = $1;}
     | declarator '(' parameter_list ')' {$$ = $1;}
     | declarator '(' id_list ')' {$$ = $1;}
