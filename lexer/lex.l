@@ -4,7 +4,7 @@
 
 extern struct SymbolTable* symbolTable;
 extern struct ConstantTable* constantTable;
-extern void addSymbol(struct SymbolTable*, char*);
+extern struct Symbol* addSymbol(struct SymbolTable*, char*);
 extern void addConstant(struct ConstantTable*, char*, char*);
 extern char* copy(char*);
 

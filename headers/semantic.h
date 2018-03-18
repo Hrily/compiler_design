@@ -20,6 +20,8 @@ int scopesLength = 1;
 int scopeCounter = 1;
 
 char* current_function_call;
+int current_function_call_scope;
+struct Symbol* current_function_call_symbol;
 array(int) current_function_param_types;
 
 int getCurrentScope () 
@@ -73,16 +75,18 @@ int equal (char* s, char* t)
 
 int getTypeConstant (char* type) 
 {
-   if (equal(type, "int"))
-       return TYPE_INT;
-   if (equal(type, "double"))
-       return TYPE_DOUBLE;
-   if (equal(type, "char"))
-       return TYPE_CHAR;
-   if (equal(type, "string"))
-       return TYPE_STRING;
-   if (equal(type, "void"))
-       return TYPE_VOID;
+    if (type == NULL)
+        return 0;
+    if (equal(type, "int"))
+        return TYPE_INT;
+    if (equal(type, "double"))
+        return TYPE_DOUBLE;
+    if (equal(type, "char"))
+        return TYPE_CHAR;
+    if (equal(type, "string"))
+        return TYPE_STRING;
+    if (equal(type, "void"))
+        return TYPE_VOID;
 }
 
 
@@ -138,9 +142,10 @@ void setDimension (struct tree* idNode, int dimension)
         symbol->dimension = dimension;
 }
 
-void setCurrentFunctionCall (char* name)
+void setCurrentFunctionCall (char* name, int scope)
 {
     current_function_call = copy(name);
+    current_function_call_scope = scope;
     current_function_param_types = 
         (typeof(current_function_param_types)) array_init();
 }
@@ -150,14 +155,35 @@ void addCurrentFunctionParamType (int type)
     array_push(current_function_param_types, type);
 }
 
+struct Symbol* getFunctionCallDefinition (char* name)
+{
+    for (int i = scopesLength - 1; i >= 0; i--)
+    {
+        struct Symbol* symbol = findSymbol(symbolTable, name, scopes[i]);
+        if (symbol == NULL) continue;
+        if (symbol->pdf == -1)
+            return symbol;
+    }
+    return NULL;
+}
+
 void checkCurrentFunctionCallTypes ()
 {
-    struct Symbol* symbol = getSymbolInScope(current_function_call);
+
+    // Add to symbol table
+    current_function_call_symbol = addSymbol(symbolTable, 
+            current_function_call, current_function_call_scope);
+    current_function_call_symbol->pdf = 0;
+
+    struct Symbol* symbol = getFunctionCallDefinition(current_function_call);
+
     if (symbol == NULL)
     {
-        // TODO: add function with pdf=false
+        current_function_call_symbol->pdf = 0;
         return;
-    }
+    } 
+    current_function_call_symbol->pdf =  1;
+
     int original_length = symbol->paramTypes.length;
     int new_lenght = current_function_param_types.length;
 
@@ -170,6 +196,9 @@ void checkCurrentFunctionCallTypes ()
     for (int i = 0; i < original_length; i++)
         if (current_function_param_types.data[i] != symbol->paramTypes.data[i])
             printCurrentFunctionError(symbol);
+
+    current_function_call_symbol->type = 
+            copy(symbol->type);
 }
 
 void printCurrentFunctionError (struct Symbol* symbol)

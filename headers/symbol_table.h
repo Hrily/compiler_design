@@ -103,22 +103,6 @@ int hasSymbol (struct SymbolTable* symbolTable, char* name, int scope)
     return 0;
 }
 
-void addSymbol (struct SymbolTable* symbolTable, char* name, int scope)
-{
-    if (hasSymbol(symbolTable, name, scope))
-        return;
-    struct Symbol *symbol = (struct Symbol*)
-        malloc(sizeof(struct Symbol));
-    symbol->name = (char*) malloc(strlen(name)) + 1;
-    symbol->scope = scope;
-    symbol->type = NULL;
-    symbol->dimension = 0;
-    symbol->pdf = -1;
-    initParamTypes(symbol);
-    strcpy(symbol->name, name);
-    array_push(symbolTable->symbols, symbol);
-}
-
 struct Symbol* findSymbol (struct SymbolTable* symbolTable, 
         char* name, int scope) 
 {
@@ -138,6 +122,23 @@ struct Symbol* findSymbol (struct SymbolTable* symbolTable,
             return symbolTable->symbols.data[i];
     }
     return NULL;
+}
+
+struct Symbol* addSymbol (struct SymbolTable* symbolTable, char* name, int scope)
+{
+    if (hasSymbol(symbolTable, name, scope))
+        return findSymbol(symbolTable, name, scope);
+    struct Symbol *symbol = (struct Symbol*)
+        malloc(sizeof(struct Symbol));
+    symbol->name = (char*) malloc(strlen(name)) + 1;
+    symbol->scope = scope;
+    symbol->type = NULL;
+    symbol->dimension = 0;
+    symbol->pdf = -1;
+    initParamTypes(symbol);
+    strcpy(symbol->name, name);
+    array_push(symbolTable->symbols, symbol);
+    return symbol;
 }
 
 void addType (struct SymbolTable* symbolTable, char* name, char* type, int scope)

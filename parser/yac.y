@@ -281,7 +281,7 @@ jump_statement
 primary_expression
 	: ID {
 		$$ = make_variable($1); 
-		setCurrentFunctionCall($1);
+		setCurrentFunctionCall($1, getCurrentScope());
 	}
 	| INT {$$ = make_number($1);}
     | DOUBLE {$$ = make_double($1);}
