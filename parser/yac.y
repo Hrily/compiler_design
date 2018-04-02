@@ -81,6 +81,7 @@ function_declarator_bracket
       initParamTypes(current_symbol);
       startNewScope();
       dontCreateNewScope = 1;
+      addLabel($1);
    }
    ;
 
@@ -294,7 +295,7 @@ primary_expression
     | DOUBLE {$$ = make_double($1);}
 	| STRING {$$ = make_string($1);}
 	| CHAR {$$ = make_char($1);}
-    | primary_expression '(' function_call_params ')' {$$ = $1; checkCurrentFunctionCallTypes();}
+   | primary_expression '(' function_call_params ')' {$$ = $1; checkCurrentFunctionCallTypes();}
     | primary_expression '('         ')' {$$ = $1; checkCurrentFunctionCallTypes();}
 	| '(' {dontGenerateCode = 1;} expression ')' {$$ = $3; dontGenerateCode = 0;}
 	;

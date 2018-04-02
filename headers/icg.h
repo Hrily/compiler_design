@@ -107,6 +107,12 @@ void convertTree (struct tree* t, int level)
 	}
 }
 
+void addLabel (char* s)
+{
+	fprintf(file, "%s:\n", s);
+	ln++;
+}
+
 void preIf ()
 {
 	fprintf(file, "\tif e1 goto label%d\n", labelc++);
