@@ -224,11 +224,7 @@ bracket_begin_scope
    ;
 
 selection_statement
-    : IF '(' expression bracket_begin_scope statement                %prec "then"
-      {
-	 endCurrentScope();
-      }
-    | IF '(' expression bracket_begin_scope statement ELSE statement
+    : IF '(' expression bracket_begin_scope {preIf();} statement else
       {
 	 endCurrentScope();
       }
@@ -238,6 +234,11 @@ selection_statement
       }
     ;
 
+else
+   : ELSE {preElse(); postIf();} statement {postElse();}
+   | {postIf();}				%prec "then"
+   ;
+
 do 
    : DO {
       startNewScope();
@@ -245,9 +246,10 @@ do
    ;
 
 iteration_statement
-	: WHILE '(' expression bracket_begin_scope statement
+	: WHILE {preWhile();} '(' expression {preIf();} bracket_begin_scope statement
 	  {
 	    endCurrentScope();
+	    postWhile();
 	  }
 	| do statement WHILE '(' expression ')' ';'
 	  {

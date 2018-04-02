@@ -6,8 +6,24 @@
 #include "parse_tree.h"
 #include "symbol_table.h"
 
+#define SIZE 100
+
 FILE* file;
 int ln = 1;
+
+int labels[SIZE];
+int labell = 0;
+
+int if_labels[SIZE];
+int if_labell = 0;
+
+int else_labels[SIZE];
+int else_labell = 0;
+
+int while_labels[SIZE];
+int while_labell = 0;
+
+int labelc = 0;
 
 void icgInit ()
 {
@@ -67,7 +83,7 @@ void convertTree (struct tree* t, int level)
 		if (equal(t->body.an_operator.operator, "="))
 		{
 			convertTree(t->body.an_operator.right, right);
-			fprintf(file, "\tmov e%d, %s\n", level, t->body.an_operator.left->body.a_variable);
+			fprintf(file, "\tmov e%d, %s\n", right, t->body.an_operator.left->body.a_variable);
 			ln++;
 			return;
 		}
@@ -79,9 +95,9 @@ void convertTree (struct tree* t, int level)
 			t->body.an_operator.right == NULL)
 		{
 			if (equal(t->body.an_operator.operator, "++"))
-				fprintf(file, "\te%d = e%e + 1\n", level, level);
+				fprintf(file, "\te%d = e%d + 1\n", level, level);
 			if (equal(t->body.an_operator.operator, "--"))
-				fprintf(file, "\te%d = e%e - 1\n", level, level);
+				fprintf(file, "\te%d = e%d - 1\n", level, level);
 			ln++;
 			return;
 		}
@@ -91,5 +107,47 @@ void convertTree (struct tree* t, int level)
 	}
 }
 
+void preIf ()
+{
+	fprintf(file, "\tif e1 goto label%d\n", labelc++);
+	ln++;
+	fprintf(file, "\tgoto label%d\n", labelc++);
+	ln++;
+	if_labels[if_labell++] = labelc-1;
+	fprintf(file, "label%d:\n", labelc-2);
+	ln++;
+}
+
+void postIf ()
+{
+	fprintf(file, "label%d:\n", if_labels[--if_labell]);
+	ln++;
+}
+
+void preElse () 
+{
+	fprintf(file, "\tgoto label%d\n", labelc++);
+	ln++;
+	else_labels[else_labell++] = labelc-1;
+}
+
+void postElse ()
+{
+	fprintf(file, "label%d:\n", else_labels[--else_labell]);
+	ln++;
+}
+
+void preWhile ()
+{
+	fprintf(file, "label%d:\n", labelc++);
+	ln++;
+	while_labels[while_labell++] = labelc-1;
+}
+
+void postWhile ()
+{
+	fprintf(file, "\tgoto label%d\n", while_labels[--while_labell]);
+	postIf();
+}
 
 #endif
