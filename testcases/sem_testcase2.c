@@ -6,7 +6,7 @@ int main()
 
     int i=0;
     for(i=0;i<10;i++)   
-        a[i]=i+1;
+        a[11]=c+"afdja";
     
-    printf("%d\n", a[10]);
+    printf("%d\n", a);
 }

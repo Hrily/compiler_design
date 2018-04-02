@@ -83,7 +83,7 @@ int getTypeConstant (char* type)
         return TYPE_DOUBLE;
     if (equal(type, "char"))
         return TYPE_CHAR;
-    if (equal(type, "string"))
+    if (equal(type, "char*"))
         return TYPE_STRING;
     if (equal(type, "void"))
         return TYPE_VOID;
@@ -136,6 +136,10 @@ int checkType (struct tree* parseTree, int scope)
 
 void setDimension (struct tree* idNode, int dimension)
 {
+   if (dimension < 1){
+      yyerror("Invalid array size");
+      return ;
+      }
     char* name = idNode->body.a_variable;
     struct Symbol* symbol = getSymbolInScope(name);
     if (symbol && symbol->dimension == 0)

@@ -26,7 +26,7 @@ keyword				auto|double|int|struct|break|else|long|switch|case|enum|register|type
 header 				#include({space}*)(\<{letter}+\.h\>)|#include({space}*)\"{letter}+(\.)?{letter}*\"
 
 identifier 			({letter}|_)({letter}|{digit}|_)*
-data_type 			(void)|(int)|(char)|(float)|(double)|(struct({space}{identifier}))|(union({space}{identifier}))
+data_type 			(void)|(int)|(char)|("char*")|(float)|(double)|(struct({space}{identifier}))|(union({space}{identifier}))
 nonidentifier		[^a-zA-Z_,.; \t\n]([^0-9,.; \t\n])+([^, \t\n.;])*
 
 parameter_list 		({identifier},)*({identifier})
