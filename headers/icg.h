@@ -112,7 +112,7 @@ void convertTree (struct tree* t, int level)
 
 void addLabel (char* s)
 {
-	fprintf(file, "%s:\n", s);
+	fprintf(file, "\n\n%s:\n", s);
 	ln++;
 }
 
