@@ -68,11 +68,6 @@ char* getType (char* name, int scope)
     return NULL;
 }
 
-int equal (char* s, char* t)
-{
-    return strcmp(s, t) == 0;
-}
-
 int getTypeConstant (char* type) 
 {
     if (type == NULL)

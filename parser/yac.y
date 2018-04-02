@@ -8,6 +8,7 @@
 #include "headers/symbol_table.h"
 #include "headers/parse_tree.h"
 #include "headers/semantic.h"
+#include "headers/icg.h"
 
 extern FILE* yyin;
 extern int   line;
@@ -20,6 +21,8 @@ char* current_function_datatype;
 struct Symbol* current_symbol;
 int flag = 0;
 int dontCreateNewScope = 0;
+
+int dontGenerateCode = 0;
 
 %}
 
@@ -126,6 +129,8 @@ init
 		printf("\n");
 		if (!checkType($$, getCurrentScope())) 
 			yyerror("Operation performed on inconsistent datatypes\n");
+	       if (!dontGenerateCode)
+		  convertTree($$, 1);
     }
     ;
 
@@ -289,7 +294,7 @@ primary_expression
 	| CHAR {$$ = make_char($1);}
     | primary_expression '(' function_call_params ')' {$$ = $1; checkCurrentFunctionCallTypes();}
     | primary_expression '('         ')' {$$ = $1; checkCurrentFunctionCallTypes();}
-	| '(' expression ')' {$$ = $2;}
+	| '(' {dontGenerateCode = 1;} expression ')' {$$ = $3; dontGenerateCode = 0;}
 	;
 
 expression
@@ -301,6 +306,8 @@ expression
 		printf("\n");
 		if (!checkType($$, getCurrentScope())) 
 			yyerror("Operation performed on inconsistent datatypes\n");	
+	       if (!dontGenerateCode)
+		  convertTree($$, 1);
     }
     | expression ',' assignment_expression {$$ = $3;}
     ;
@@ -438,6 +445,8 @@ int main (int argc, char* argv[]) {
     }
 
     yyin = fopen(argv[1], "r");
+
+   icgInit();
 
     if (!yyin) {
 	printf("File doesn't exist\n");

@@ -1,0 +1,5 @@
+	mov a, e2
+	mov b, e6
+	mov c, e7
+	e3 = e6 && e7
+	e1 = e2 || e3

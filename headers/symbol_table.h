@@ -50,6 +50,11 @@ char* copy (char* s) {
     return r;
 }
 
+int equal (char* s, char* t)
+{
+    return strcmp(s, t) == 0;
+}
+
 struct Symbol 
 {
     char* name;
