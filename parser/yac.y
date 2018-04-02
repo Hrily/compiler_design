@@ -256,13 +256,10 @@ iteration_statement
 	  {
 	    endCurrentScope();
 	  }
-	| FOR '(' expression_statement expression_statement bracket_begin_scope statement
+	| FOR '(' expression_statement {preFor1();} expression_statement {preFor2();} expression {preFor3();} bracket_begin_scope statement
 	  {
 	    endCurrentScope();
-	  }
-	| FOR '(' expression_statement expression_statement expression bracket_begin_scope statement
-	  {
-	    endCurrentScope();
+	    postFor();
 	  }
 	;
 

@@ -23,6 +23,9 @@ int else_labell = 0;
 int while_labels[SIZE];
 int while_labell = 0;
 
+int for_labels[SIZE];
+int for_labell = 0;
+
 int labelc = 0;
 
 void icgInit ()
@@ -154,6 +157,41 @@ void postWhile ()
 {
 	fprintf(file, "\tgoto label%d\n", while_labels[--while_labell]);
 	postIf();
+}
+
+void preFor1 ()
+{
+	fprintf(file, "label%d\n", labelc++);
+	ln++;
+}
+
+void preFor2 ()
+{
+	fprintf(file, "\tif e1 goto label%d\n", labelc+2); //TODO
+	ln++;
+	fprintf(file, "\tgoto label%d\n", labelc++);
+	ln++;
+	for_labels[for_labell++] = labelc-1;
+
+	fprintf(file, "label%d\n", labelc++);
+	ln++;
+	for_labels[for_labell++] = labelc-1;
+}
+
+void preFor3 () 
+{
+	fprintf(file, "\tgoto label%d\n", labelc-3);
+	ln++;
+	fprintf(file, "label%d\n", labelc++);
+	ln++;
+}
+
+void postFor ()
+{
+	fprintf(file, "\tgoto label%d\n", for_labels[--for_labell]);
+	ln++;
+	fprintf(file, "label%d\n", for_labels[--for_labell]);
+	ln++;
 }
 
 #endif
