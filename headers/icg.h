@@ -73,7 +73,18 @@ void convertTree (struct tree* t, int level)
 
 	if (t->nodetype == variable_node)
 	{
-		fprintf(file, "\tmov %s, e%d\n", t->body.a_variable, level);
+		if (t->index > -1) {
+			fprintf(file, "\tmov %d, ind\n", t->index);
+			fprintf(file, "\tind = ind * 4\n");
+			fprintf(file, "\tmov %s+ind, e%d\n", t->body.a_variable, level);
+			ln+=2;
+		}else if (t->s_index != NULL) {
+			fprintf(file, "\tmov %s, ind\n", t->s_index);
+			fprintf(file, "\tind = ind * 4\n");
+			fprintf(file, "\tmov %s+ind, e%d\n", t->body.a_variable, level);
+			ln+=2;
+		}else
+			fprintf(file, "\tmov %s, e%d\n", t->body.a_variable, level);
 		ln++;
 		return;
 	}
@@ -86,7 +97,19 @@ void convertTree (struct tree* t, int level)
 		if (equal(t->body.an_operator.operator, "="))
 		{
 			convertTree(t->body.an_operator.right, right);
-			fprintf(file, "\tmov e%d, %s\n", right, t->body.an_operator.left->body.a_variable);
+			struct tree* c = t->body.an_operator.left;
+			if (c->index > -1) {
+				fprintf(file, "\tmov %d, ind\n", c->index);
+				fprintf(file, "\tind = ind * 4\n");
+				fprintf(file, "\tmov e%d, %s+ind\n", level, c->body.a_variable);
+				ln+=2;
+			}else if (c->s_index != NULL) {
+				fprintf(file, "\tmov %s, ind\n", c->s_index);
+				fprintf(file, "\tind = ind * 4\n");
+				fprintf(file, "\tmov e%d, %s+ind\n", level, c->body.a_variable);
+				ln+=2;
+			}else
+				fprintf(file, "\tmov e%d, %s\n", right, t->body.an_operator.left->body.a_variable);
 			ln++;
 			return;
 		}
@@ -114,6 +137,30 @@ void addLabel (char* s)
 {
 	fprintf(file, "\n\n%s:\n", s);
 	ln++;
+}
+
+void addIndex (struct tree* t, int index)
+{
+	t->index = index;
+}
+
+void addSIndex (struct tree* t, char* s)
+{
+	struct Symbol* symbol = getSymbolInScope(s);
+	if (s == NULL) 
+	{
+		printf("Unknown Identifier: %s\n", s);
+		yyerror("Unknown Identifier");
+		return;
+	}
+	int type = getTypeConstant(symbol->type);
+	if (type != TYPE_INT)
+	{
+		yyerror("Array index not of integer type");
+		return;
+	}
+	t->s_index = copy(s);
+	printf("tindex%s\n", t->s_index);
 }
 
 void preIf ()

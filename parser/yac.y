@@ -301,7 +301,7 @@ expression
     : assignment_expression {
 		$$ = $1;
 		printf("*** Parse Tree ***\n");
-		printtree($1, 1);
+		printtree($$, 1);
 		printf("***\n");
 		printf("\n");
 		if (!checkType($$, getCurrentScope())) 
@@ -335,7 +335,8 @@ constant_expression
 
 postfix_expression
 	: primary_expression {$$ = $1;}
-	| postfix_expression '[' expression ']' {$$ = $1;}
+	| postfix_expression '[' INT ']' {$$ = $1; addIndex($$, $3);}
+	| postfix_expression '[' ID  ']' {$$ = $1; addSIndex($$, $3);}
 	| postfix_expression '(' ')' {$$ = $1;}
 	| postfix_expression '(' argument_expression_list ')' {$$ = $1;}
 	| postfix_expression '.' ID {$$ = $1;}

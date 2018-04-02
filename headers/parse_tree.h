@@ -4,7 +4,7 @@
 #define step 4
 
 // parse tree
-enum treetype {operator_node, number_node, double_node, char_node, string_node, variable_node};
+enum treetype {operator_node, number_node, double_node, char_node, string_node, variable_node, array_node};
 typedef struct tree {
    enum treetype nodetype;
    union {
@@ -15,6 +15,8 @@ typedef struct tree {
      char* a_string;
      double a_double;
    } body;
+   int index;
+   char* s_index
 } tree;
 
 static tree *make_operator (tree *l, char* o, tree *r) {
@@ -23,6 +25,8 @@ static tree *make_operator (tree *l, char* o, tree *r) {
    result->body.an_operator.left= l;
    result->body.an_operator.operator= copy(o);
    result->body.an_operator.right= r;
+   result->index = -1;
+   result->s_index = NULL;
    return result;
 }
 
@@ -30,6 +34,8 @@ static tree *make_number (int n) {
    tree *result= (tree*) malloc (sizeof(tree));
    result->nodetype= number_node;
    result->body.a_number= n;
+   result->index = -1;
+   result->s_index = NULL;
    return result;
 }
 
@@ -37,6 +43,8 @@ static tree *make_variable (char* v) {
    tree *result= (tree*) malloc (sizeof(tree));
    result->nodetype= variable_node;
    result->body.a_variable= copy(v);
+   result->index = -1;
+   result->s_index = NULL;
    return result;
 }
 
@@ -44,6 +52,8 @@ static tree *make_char (char* v) {
    tree *result= (tree*) malloc (sizeof(tree));
    result->nodetype= char_node;
    result->body.a_char = copy(v);
+   result->index = -1;
+   result->s_index = NULL;
    return result;
 }
 
@@ -51,6 +61,8 @@ static tree *make_string (char* v) {
    tree *result= (tree*) malloc (sizeof(tree));
    result->nodetype= string_node;
    result->body.a_string = copy(v);
+   result->index = -1;
+   result->s_index = NULL;
    return result;
 }
 
@@ -58,6 +70,8 @@ static tree *make_double (double v) {
    tree *result= (tree*) malloc (sizeof(tree));
    result->nodetype= double_node;
    result->body.a_double= v;
+   result->index = -1;
+   result->s_index = NULL;
    return result;
 }
 
@@ -80,7 +94,12 @@ static void printtree (tree *t, int level) {
         printf ("%*c%s\n", level, ' ', t->body.a_char);
         break;
        case variable_node:
-        printf ("%*c%s\n", level, ' ', t->body.a_variable);
+        if (t->index > 0)
+           printf ("%*c%s[%d]\n", level, ' ', t->body.a_variable, t->index);
+        else if (t->s_index)
+           printf ("%*c%s[%s]\n", level, ' ', t->body.a_variable, t->s_index);
+        else
+           printf ("%*c%s\n", level, ' ', t->body.a_variable);
         break;
        case double_node:
         printf ("%*c%lf\n", level, ' ', t->body.a_double);
