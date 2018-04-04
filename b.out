@@ -6,14 +6,14 @@ main:
 	goto label1
 label0:
 	mov a, e1
-	goto label0
+	goto label2
 label1:
 	mov b, e1
-	if e1 goto label2
-	goto label3
-label2:
-	mov b, e1
-	goto label0
+	if e1 goto label3
+	goto label4
 label3:
+	mov b, e1
+	goto label2
+label4:
 	mov c, e1
-label0:
+label2:
