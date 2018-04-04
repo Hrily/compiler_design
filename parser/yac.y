@@ -43,7 +43,7 @@ int dontGenerateCode = 0;
 %token <dt>   DATATYPE
 %token <sval> ASSIGNMENT
 %token INC_OP DEC_OP SHIFT_OP_L SHIFT_OP_R LT_COMP GT_COMP LTE_COMP GTE_COMP EQUALITY_OP NOT_EQUALITY_OP AND_OP OR_OP
-%token CASE DEFAULT IF ELSE SWITCH WHILE DO FOR GOTO CONTINUE BREAK RETURN
+%token CASE DEFAULT IF ELSE ELSE_IF SWITCH WHILE DO FOR GOTO CONTINUE BREAK RETURN
 
 %type <a_tree> conditional_expression additive_expression multiplicative_expression logical_or_expression shift_expression relational_expression logical_and_expression equality_expression and_expression exclusive_or_expression inclusive_or_expression cast_expression unary_expression primary_expression expression postfix_expression assignment_expression init declarator
 %type <sval> assignment_operator
@@ -225,9 +225,10 @@ bracket_begin_scope
    ;
 
 selection_statement
-    : IF '(' expression bracket_begin_scope {preIf();} statement else
+    : IF '(' expression bracket_begin_scope {preIf1(); preIf();} statement else
       {
 	 endCurrentScope();
+	 postIf2();
       }
     | SWITCH '(' expression bracket_begin_scope statement
       {
@@ -237,6 +238,7 @@ selection_statement
 
 else
    : ELSE {preElse(); postIf();} statement {postElse();}
+   | ELSE_IF {preElse(); preElseIf();} '(' expression bracket_begin_scope {preIf();} statement else
    | {postIf();}				%prec "then"
    ;
 

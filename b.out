@@ -1,28 +1,19 @@
 
 
 main:
-	mov 0, e3
-	mov e3, i
-label0
-	mov i, e2
-	mov 10, e3
-	e1 = e2 < e3
-	if e1 goto label3
+	mov a, e1
+	if e1 goto label0
 	goto label1
-label2
-	mov i, e6
-	mov 1, e7
-	e3 = e6 + e7
-	mov e3, i
+label0:
+	mov a, e1
 	goto label0
-label3
-	mov i, ind
-	ind = ind * 4
-	mov a+ind, e6
-	mov 1, e7
-	e3 = e6 + e7
-	mov i, ind
-	ind = ind * 4
-	mov e1, b+ind
-	goto label2
-label1
+label1:
+	mov b, e1
+	if e1 goto label2
+	goto label3
+label2:
+	mov b, e1
+	goto label0
+label3:
+	mov c, e1
+label0:

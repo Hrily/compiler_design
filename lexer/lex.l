@@ -58,6 +58,7 @@ case                "case"
 default             "default"
 if                  "if"
 else                "else"
+else_if             "else if"
 switch              "switch"
 while               "while"
 do                  "do"
@@ -93,6 +94,7 @@ dec_op              "--"
 {default}           return DEFAULT;
 {if}                return IF;
 {else}              return ELSE;
+{else_if}           return ELSE_IF;
 {switch}            return SWITCH;
 {while}             return WHILE;
 {do}                return DO;

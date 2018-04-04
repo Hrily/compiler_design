@@ -26,6 +26,9 @@ int while_labell = 0;
 int for_labels[SIZE];
 int for_labell = 0;
 
+int sink[SIZE];
+int sinkl = 0;
+
 int labelc = 0;
 
 void icgInit ()
@@ -174,7 +177,23 @@ void preIf ()
 	ln++;
 }
 
+void preIf1 ()
+{
+	sink[sinkl++] = -1;
+}
+
 void postIf ()
+{
+	fprintf(file, "label%d:\n", if_labels[--if_labell]);
+	ln++;
+}
+
+void postIf2 () 
+{	
+	sinkl--;
+}
+
+void preElseIf ()
 {
 	fprintf(file, "label%d:\n", if_labels[--if_labell]);
 	ln++;
@@ -182,14 +201,21 @@ void postIf ()
 
 void preElse () 
 {
-	fprintf(file, "\tgoto label%d\n", labelc++);
+	printf("preElse l%d s%d\n", labelc-1, sink[sinkl-1]);
+	if (sink[sinkl-1] == -1){
+		// Create a lable
+		fprintf(file, "\tgoto label%d\n", labelc++);
+		printf("preElse %d\n", labelc-1);
+		sink[sinkl-1] = labelc-1;
+	}else
+		fprintf(file, "\tgoto label%d\n", sink[sinkl-1]);
+
 	ln++;
-	else_labels[else_labell++] = labelc-1;
 }
 
 void postElse ()
 {
-	fprintf(file, "label%d:\n", else_labels[--else_labell]);
+	fprintf(file, "label%d:\n", sink[sinkl-1]);
 	ln++;
 }
 
